@@ -15,7 +15,7 @@ project("S5ProxyTest");
 
     filter("system:windows");
         defines("HAVE_UNISTD_H=0");
-        defines("WIN32")
+        defines("_WIN32")
         files({"test/getopt.c"});
 
     filter("system:linux");

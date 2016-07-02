@@ -29,7 +29,7 @@
 #include <stddef.h>      /* size_t, ssize_t */
 #include <stdint.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <WinSock2.h>
 #else
 #include <netinet/in.h>  /* sockaddr_in, sockaddr_in6 */
