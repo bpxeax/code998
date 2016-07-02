@@ -14,9 +14,9 @@ project("S5ProxyTest");
     removefiles({"test/getopt.c"});
 
     filter("system:windows");
-        defines("HAVE_UNISTD_H=0");
-        defines("_WIN32")
+        defines({"HAVE_UNISTD_H=0", "_WIN32", "_WIN32_WINNT=0x0600", "_GNU_SOURCE"});
         files({"test/getopt.c"});
+        links({"ws2_32", "Iphlpapi", "userenv", "psapi", "MSVCRTD"});
 
     filter("system:linux");
         defines("HAVE_UNISTD_H=1");
