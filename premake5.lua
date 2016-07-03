@@ -12,6 +12,14 @@ project("S5ProxyTest");
     includedirs({"src/3rd/libuv/include"});
     files({"test/**.h", "test/**.c"});
     removefiles({"test/getopt.c"});
+    
+    filter("configurations:debug");
+        defines("DEBUG");
+        symbols("on");
+        
+    filter("configurations:release");
+        defines("NDEBUG");
+        optimize("on");
 
     filter("system:windows");
         defines({"HAVE_UNISTD_H=0", "_WIN32", "_WIN32_WINNT=0x0600", "_GNU_SOURCE"});
@@ -20,15 +28,12 @@ project("S5ProxyTest");
 
     filter("system:linux");
         defines("HAVE_UNISTD_H=1");
+        links({"m", "uv"});
 
-    filter("configurations:debug");
-        defines("DEBUG");
-        symbols("on");
+    filter({"system:windows", "configurations:debug"});
         links({"libuv_d_x86"});
 
-    filter("configurations:release");
-        defines("NDEBUG");
-        optimize("on");
+    filter({"system:windows" ,"configurations:release"});
         links({"libuv_r_x86"});
 
 
