@@ -2,7 +2,7 @@ solution("Server");
     configurations({"debug", "release"});
     location("build");
     libdirs({"package/**"});
-
+    
 project("S5ProxyTest");
     targetname("S5Proxy");
     location("build/S5ProxyTest");
@@ -28,7 +28,7 @@ project("S5ProxyTest");
 
     filter("system:linux");
         defines("HAVE_UNISTD_H=1");
-        links({"m", "uv"});
+        links({"uv", "pthread"});
 
     filter({"system:windows", "configurations:debug"});
         links({"libuv_d_x86"});
