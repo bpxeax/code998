@@ -80,6 +80,49 @@ project "server"
             "pthread"
         } 
 
+project "client"
+    location (_ROOT_BUILD_DIR.."/%{prj.name}")
+    kind "ConsoleApp"
+    language "C++"
+    targetdir (_BIN_OUTPUT.."/%{prj.name}")
+
+    includedirs
+    {
+        "src/3rd/libuv/include"
+    }
+
+    files
+    {
+        "src/client/**.h",
+        "src/client/**.cpp"
+    }
+
+    filter "system:windows" 
+        defines 
+        {
+            "_WIN32",
+            "_WIN32_WINNT=0x0600",
+            "_GNU_SOURCE"
+        } 
+
+        links 
+        {
+            "ws2_32", 
+            "Iphlpapi", 
+            "userenv", 
+            "psapi", 
+            "MSVCRTD",
+            "libuv_".."%{cfg.buildcfg}_".."%{cfg.platform}"
+        } 
+
+    filter "system:not windows" 
+        links 
+        {
+            "uv", 
+            "pthread"
+        } 
+
+
 
 project "S5ProxyTest"
     targetname "S5Proxy"
