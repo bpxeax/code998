@@ -1,13 +1,32 @@
 solution "Server"
+    local _LIB_OUTPUT = "output/lib/%{cfg.buildcfg}/%{cfg.platform}"
+    local _BIN_OUTPUT = "output/bin/%{cfg.buildcfg}/%{cfg.platform}"
+    local _ROOT_BUILD_DIR = "build/".._ACTION
+
     configurations {"debug", "release"}
-    location "build"
+    platforms {"x86", "x64"}
+    location (_ROOT_BUILD_DIR)
     libdirs {"package/**"}
 
+    filter "configurations:debug"
+        defines "DEBUG"
+        symbols "on"
+        
+    filter "configurations:release"
+        defines "NDEBUG"
+        optimize "on"
+
+    filter "platforms: x86"
+        architecture "x86"
+
+    filter "platforms: x64"
+        architecture "x86_64"
+
 project "core" 
-    location "build/core"
+    location (_ROOT_BUILD_DIR.."/core")
     kind "StaticLib"
     language "C++"
-    targetdir "output/lib/%{cfg.buildcfg}"
+    targetdir (_LIB_OUTPUT)
     includedirs 
     {
         "src/3rd/libuv/include"
@@ -15,15 +34,16 @@ project "core"
 
     files
     {
-
+        "src/core/**.h",
+        "src/core/**.cpp"
     }
     
 project "S5ProxyTest"
     targetname "S5Proxy"
-    location "build/S5ProxyTest"
+    location (_ROOT_BUILD_DIR.."/S5ProxyTest")
     kind "ConsoleApp"
     language "c"
-    targetdir "output/bin/%{cfg.buildcfg}"
+    targetdir (_BIN_OUTPUT)
 
     includedirs
     {
@@ -35,18 +55,10 @@ project "S5ProxyTest"
         "test/**.h", "test/**.c"
     }
 
-    removefiles
+    excludes
     {
         "test/getopt.c"
     }
-    
-    filter "configurations:debug"
-        defines "DEBUG"
-        symbols "on"
-        
-    filter "configurations:release"
-        defines "NDEBUG"
-        optimize "on"
 
     filter "system:windows" 
         defines 
@@ -68,10 +80,11 @@ project "S5ProxyTest"
             "Iphlpapi", 
             "userenv", 
             "psapi", 
-            "MSVCRTD"
+            "MSVCRTD",
+            "libuv_".."%{cfg.buildcfg}_".."%{cfg.platform}"
         } 
 
-    filter "system:linux" 
+    filter "system:not windows" 
         defines 
         {
             "HAVE_UNISTD_H=1"
@@ -81,18 +94,6 @@ project "S5ProxyTest"
         {
             "uv", 
             "pthread"
-        } 
-
-    filter {"system:windows", "configurations:debug"} 
-        links 
-        {
-            "libuv_d_x86"
-        } 
-
-    filter {"system:windows" ,"configurations:release"} 
-        links 
-        {
-            "libuv_r_x86"
         } 
 
 
