@@ -23,10 +23,10 @@ solution "Server"
         architecture "x86_64"
 
 project "core" 
-    location (_ROOT_BUILD_DIR.."/core")
+    location (_ROOT_BUILD_DIR.."/%{prj.name}")
     kind "StaticLib"
     language "C++"
-    targetdir (_LIB_OUTPUT)
+    targetdir (_LIB_OUTPUT.."/%{prj.name}")
     includedirs 
     {
         "src/3rd/libuv/include"
@@ -37,13 +37,56 @@ project "core"
         "src/core/**.h",
         "src/core/**.cpp"
     }
-    
+
+project "server"
+    location (_ROOT_BUILD_DIR.."/%{prj.name}")
+    kind "ConsoleApp"
+    language "C++"
+    targetdir (_BIN_OUTPUT.."/%{prj.name}")
+
+    includedirs
+    {
+        "src/3rd/libuv/include"
+    }
+
+    files
+    {
+        "src/server/**.h",
+        "src/server/**.cpp"
+    }
+
+    filter "system:windows" 
+        defines 
+        {
+            "_WIN32",
+            "_WIN32_WINNT=0x0600",
+            "_GNU_SOURCE"
+        } 
+
+        links 
+        {
+            "ws2_32", 
+            "Iphlpapi", 
+            "userenv", 
+            "psapi", 
+            "MSVCRTD",
+            "libuv_".."%{cfg.buildcfg}_".."%{cfg.platform}"
+        } 
+
+    filter "system:not windows" 
+        links 
+        {
+            "uv", 
+            "pthread"
+        } 
+
+
 project "S5ProxyTest"
     targetname "S5Proxy"
-    location (_ROOT_BUILD_DIR.."/S5ProxyTest")
+    location (_ROOT_BUILD_DIR.."/%{prj.name}")
     kind "ConsoleApp"
     language "c"
-    targetdir (_BIN_OUTPUT)
+    targetdir (_BIN_OUTPUT.."/%{prj.name}")
 
     includedirs
     {
