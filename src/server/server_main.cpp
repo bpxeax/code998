@@ -59,7 +59,7 @@ int main()
 
     uv_tcp_bind(&server, (const sockaddr*)&addr, 0);
 
-    int error_status = uv_listen((uv_stream_t*)&server, 0, onConnect);
+    int error_status = uv_listen((uv_stream_t*)&server, 1024, onConnect);
     if (error_status)
     {
         std::cout << "listen failed with " << uv_strerror(error_status) << std::endl;
