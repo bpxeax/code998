@@ -22,6 +22,9 @@ solution "Server"
     filter "platforms: x64"
         architecture "x86_64"
 
+    filter "language:c++"
+        buildoptions "-std=c++11"
+
 project "core" 
     location (_ROOT_BUILD_DIR.."/%{prj.name}")
     kind "StaticLib"
