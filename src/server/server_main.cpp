@@ -56,7 +56,7 @@ void afterRead(
         }
         else
         {
-            std::cout << uv_strerror(nread);
+            std::cout << uv_strerror(nread) << std::endl;
         }
 
         delete[] buf->base;
@@ -127,6 +127,10 @@ int main()
     {
         std::cout << "listen failed with " << uv_strerror(error_status) << std::endl;
         return 1;
+    }
+    else
+    {
+        std::cout << "listening at: 10000 port" << std::endl;
     }
 
     return uv_run(loop, UV_RUN_DEFAULT);
