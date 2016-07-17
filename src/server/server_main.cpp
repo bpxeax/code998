@@ -1,26 +1,89 @@
 #include <iostream>
+#include <assert.h>
 
 extern "C"
 {
 #include "uv.h"
 }
 
+typedef struct {
+    uv_write_t req;
+    uv_buf_t buf;
+} write_req_t;
+
 uv_loop_t* loop = nullptr;
 
-void allocate_buffer(
+void onClose(uv_handle_t* handle);
+
+void afterShutdown(uv_shutdown_t* req, int status)
+{
+    uv_close((uv_handle_t*)req->handle, onClose);
+    delete req;
+}
+
+void allocateBuffer(
     uv_handle_t* handle,
     size_t suggested_size,
     uv_buf_t* buf)
 {
+    buf->base = new char[suggested_size];
+    buf->len = suggested_size;
+}
+
+void afterWrite(uv_write_t* req, int status)
+{
+    write_req_t* write_request = reinterpret_cast<write_req_t*>(req);
+    delete[] write_request->buf.base;
+    delete write_request;
+
+    if (status)
+    {
+        std::cout << "write error: " << uv_strerror(status) << std::endl;
+    }
 
 }
 
-void echo_read(
+void afterRead(
     uv_stream_t* stream,
     ssize_t nread,
     const uv_buf_t* buf)
 {
+    if (nread < 0)
+    {
+        if (nread == UV_EOF)
+        {
+            std::cout << "read end of stream!" << std::endl;
+        }
+        else
+        {
+            std::cout << uv_strerror(nread);
+        }
 
+        delete[] buf->base;
+        uv_shutdown_t* shutdown_request = new uv_shutdown_t;
+        assert(uv_shutdown(shutdown_request, stream, afterShutdown) == 0);
+        return;
+    }
+
+    if (nread == 0)
+    {
+        delete[] buf->base;
+        return;
+    }
+
+    write_req_t* write_request = new write_req_t;
+    write_request->buf = uv_buf_init(buf->base, nread);
+
+    if (uv_write(&write_request->req, stream, &write_request->buf, 1, afterWrite))
+    {
+        std::cout << "write stream fail!" << std::endl;
+        assert(false);
+    }
+}
+
+void onClose(uv_handle_t* handle)
+{
+    delete handle;
 }
 
 void onConnect(
@@ -33,16 +96,16 @@ void onConnect(
         return;
     }
 
-    uv_tcp_t* client = (uv_tcp_t*)malloc(sizeof(uv_tcp_t));
+    uv_tcp_t* client = new uv_tcp_t;
     uv_tcp_init(loop, client);
 
     if (uv_accept(server, (uv_stream_t*)client) == 0)
     {
-        uv_read_start((uv_stream_t*)client, allocate_buffer, echo_read);
+        uv_read_start((uv_stream_t*)client, allocateBuffer, afterRead);
     }
     else
     {
-        uv_close((uv_handle_t*)client, nullptr);
+        uv_close((uv_handle_t*)client, onClose);
     }
 }
 
