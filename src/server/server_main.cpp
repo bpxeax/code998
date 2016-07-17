@@ -71,6 +71,9 @@ void afterRead(
         return;
     }
 
+    std::string received_content(buf->base, nread);
+    std::cout << "receive: " << received_content.c_str() << std::endl;
+
     write_req_t* write_request = new write_req_t;
     write_request->buf = uv_buf_init(buf->base, nread);
 
@@ -81,9 +84,9 @@ void afterRead(
     }
 }
 
-void onClose(uv_handle_t* handle)
+void onClose(uv_handle_t* peer)
 {
-    delete handle;
+    delete peer;
 }
 
 void onConnect(
