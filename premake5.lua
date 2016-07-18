@@ -22,7 +22,7 @@ solution "Server"
     filter "platforms: x64"
         architecture "x86_64"
 
-    filter "language:c++"
+    filter {"language:c++", "action:gmake"}
         buildoptions "-std=c++11"
 
 project "core" 
