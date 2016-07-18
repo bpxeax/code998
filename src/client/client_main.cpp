@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <assert.h>
 
 extern "C"
@@ -52,7 +53,7 @@ void afterWrite(uv_write_t* req, int status)
     std::string content;
     std::cin >> content;
 
-    memcpy(write_request->buf.base, content.c_str(), write_request->buf.len);
+    std::memcpy(write_request->buf.base, content.c_str(), write_request->buf.len);
 
     uv_write(&write_request->req, req->handle, &write_request->buf, 1, afterWrite);
 }
@@ -106,7 +107,7 @@ void onConnect(uv_connect_t* connection, int status)
     uv_buf_t buffer;
     buffer.len = content.length();
     buffer.base = new char[buffer.len];
-    memcpy(buffer.base, content.c_str(), buffer.len);
+    std::memcpy(buffer.base, content.c_str(), buffer.len);
 
     write_req_t* write_request = new write_req_t();
     write_request->buf = buffer;
