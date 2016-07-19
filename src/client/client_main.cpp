@@ -53,6 +53,10 @@ void afterWrite(uv_write_t* req, int status)
     std::string content;
     std::cin >> content;
 
+    delete[] write_request->buf.base;
+    write_request->buf.base = new char[content.length()];
+    write_request->buf.len = content.length();
+
     std::memcpy(write_request->buf.base, content.c_str(), write_request->buf.len);
 
     uv_write(&write_request->req, req->handle, &write_request->buf, 1, afterWrite);
