@@ -1,35 +1,35 @@
-solution "Server"
-    local _LIB_OUTPUT = "output/lib/%{cfg.buildcfg}/%{cfg.platform}"
-    local _BIN_OUTPUT = "output/bin/%{cfg.buildcfg}/%{cfg.platform}"
-    local _ROOT_BUILD_DIR = "build/".._ACTION
+dofile("premake_common.lua");
 
+solution "Jungle"
     configurations {"debug", "release"}
     platforms {"x86", "x64"}
-    location (_ROOT_BUILD_DIR)
-    libdirs {"package/**"}
+    location (GLOBAL.BUILD_DIR)
+    libdirs {path.join(GLOBAL.PACKAGE_DIR, "/**")}
 
-    filter "configurations:debug"
+    filter {"configurations:debug"}
         defines "DEBUG"
         symbols "on"
         
-    filter "configurations:release"
+    filter {"configurations:release"}
         defines "NDEBUG"
         optimize "on"
 
-    filter "platforms: x86"
+    filter {"platforms: x86"}
         architecture "x86"
 
-    filter "platforms: x64"
+    filter {"platforms: x64"}
         architecture "x86_64"
 
     filter {"language:c++", "action:gmake"}
         buildoptions "-std=c++11"
 
+    filter {}
+
 project "core" 
-    location (_ROOT_BUILD_DIR.."/%{prj.name}")
+    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
     kind "StaticLib"
     language "C++"
-    targetdir (_LIB_OUTPUT.."/%{prj.name}")
+    targetdir (GLOBAL.LIB_OUT_DIR.."/%{prj.name}")
     includedirs 
     {
         "src/3rd/libuv/include"
@@ -42,10 +42,10 @@ project "core"
     }
 
 project "server"
-    location (_ROOT_BUILD_DIR.."/%{prj.name}")
+    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
     kind "ConsoleApp"
     language "C++"
-    targetdir (_BIN_OUTPUT.."/%{prj.name}")
+    targetdir (GLOBAL.BIN_OUT_DIR.."/%{prj.name}")
 
     includedirs
     {
@@ -84,10 +84,10 @@ project "server"
         } 
 
 project "client"
-    location (_ROOT_BUILD_DIR.."/%{prj.name}")
+    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
     kind "ConsoleApp"
     language "C++"
-    targetdir (_BIN_OUTPUT.."/%{prj.name}")
+    targetdir (GLOBAL.BIN_OUT_DIR.."/%{prj.name}")
 
     includedirs
     {
@@ -129,10 +129,10 @@ project "client"
 
 project "S5ProxyTest"
     targetname "S5Proxy"
-    location (_ROOT_BUILD_DIR.."/%{prj.name}")
+    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
     kind "ConsoleApp"
     language "c"
-    targetdir (_BIN_OUTPUT.."/%{prj.name}")
+    targetdir (GLOBAL.BIN_OUT_DIR.."/%{prj.name}")
 
     includedirs
     {
