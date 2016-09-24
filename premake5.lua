@@ -36,7 +36,9 @@ solution "Jungle"
     genServerProject()
     genS5ProxyTestProject()
 
-if _ACTION == "clean" then
+
+local clean = function()
     os.rmdir (GLOBAL.OUT_ROOT_DIR)
     os.rmdir (GLOBAL.BUILD_ROOT_DIR)
 end
+premake.addCleanAction(clean)

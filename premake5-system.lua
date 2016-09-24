@@ -1,0 +1,1 @@
+dofile("premake_clean.lua")
