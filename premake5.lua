@@ -25,168 +25,18 @@ solution "Jungle"
 
     filter {}
 
-project "core" 
-    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
-    kind "StaticLib"
-    language "C++"
-    targetdir (GLOBAL.LIB_OUT_DIR.."/%{prj.name}")
-    includedirs 
-    {
-        "src/3rd/libuv/include"
-    }
+    dofile("premake_core_project.lua")
+    
+    dofile("premake_client_project.lua")
+    dofile("premake_server_project.lua")
+    dofile("premake_s5proxy_project.lua")
 
-    files
-    {
-        "src/core/**.h",
-        "src/core/**.cpp"
-    }
-
-project "server"
-    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
-    kind "ConsoleApp"
-    language "C++"
-    targetdir (GLOBAL.BIN_OUT_DIR.."/%{prj.name}")
-
-    includedirs
-    {
-        "src/3rd/libuv/include"
-    }
-
-    files
-    {
-        "src/server/**.h",
-        "src/server/**.cpp"
-    }
-
-    filter "system:windows" 
-        defines 
-        {
-            "_WIN32",
-            "_WIN32_WINNT=0x0600",
-            "_GNU_SOURCE"
-        } 
-
-        links 
-        {
-            "ws2_32", 
-            "Iphlpapi", 
-            "userenv", 
-            "psapi", 
-            "MSVCRTD",
-            "libuv_".."%{cfg.buildcfg}_".."%{cfg.platform}"
-        } 
-
-    filter "system:not windows" 
-        links 
-        {
-            "uv", 
-            "pthread"
-        } 
-
-project "client"
-    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
-    kind "ConsoleApp"
-    language "C++"
-    targetdir (GLOBAL.BIN_OUT_DIR.."/%{prj.name}")
-
-    includedirs
-    {
-        "src/3rd/libuv/include"
-    }
-
-    files
-    {
-        "src/client/**.h",
-        "src/client/**.cpp"
-    }
-
-    filter "system:windows" 
-        defines 
-        {
-            "_WIN32",
-            "_WIN32_WINNT=0x0600",
-            "_GNU_SOURCE"
-        } 
-
-        links 
-        {
-            "ws2_32", 
-            "Iphlpapi", 
-            "userenv", 
-            "psapi", 
-            "MSVCRTD",
-            "libuv_".."%{cfg.buildcfg}_".."%{cfg.platform}"
-        } 
-
-    filter "system:not windows" 
-        links 
-        {
-            "uv", 
-            "pthread"
-        } 
-
-
-
-project "S5ProxyTest"
-    targetname "S5Proxy"
-    location (GLOBAL.BUILD_DIR.."/%{prj.name}")
-    kind "ConsoleApp"
-    language "c"
-    targetdir (GLOBAL.BIN_OUT_DIR.."/%{prj.name}")
-
-    includedirs
-    {
-        "src/3rd/libuv/include"
-    }
-
-    files
-    {
-        "test/**.h", "test/**.c"
-    }
-
-    excludes
-    {
-        "test/getopt.c"
-    }
-
-    filter "system:windows" 
-        defines 
-        {
-            "HAVE_UNISTD_H=0", 
-            "_WIN32",
-            "_WIN32_WINNT=0x0600",
-            "_GNU_SOURCE"
-        } 
-
-        files 
-        {
-            "test/getopt.c"
-        }
-
-        links 
-        {
-            "ws2_32", 
-            "Iphlpapi", 
-            "userenv", 
-            "psapi", 
-            "MSVCRTD",
-            "libuv_".."%{cfg.buildcfg}_".."%{cfg.platform}"
-        } 
-
-    filter "system:not windows" 
-        defines 
-        {
-            "HAVE_UNISTD_H=1"
-        } 
-
-        links 
-        {
-            "uv", 
-            "pthread"
-        } 
-
+    genCoreProject()
+    genClientProject()
+    genServerProject()
+    genS5ProxyTestProject()
 
 if _ACTION == "clean" then
-    os.rmdir "output" 
-    os.rmdir "build" 
+    os.rmdir (GLOBAL.OUT_ROOT_DIR)
+    os.rmdir (GLOBAL.BUILD_ROOT_DIR)
 end
