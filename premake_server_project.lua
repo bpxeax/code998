@@ -7,13 +7,19 @@ function genServerProject()
 
         includedirs
         {
-            path.join(GLOBAL.SRC_DIR, "3rd/libuv/include")
+            path.join(GLOBAL.SRC_DIR, "3rd/libuv/include"),
+            path.join(GLOBAL.SRC_DIR, "3rd/asio")
         }
 
         files
         {
             path.join(GLOBAL.SRC_DIR, "server", "**.h"),
             path.join(GLOBAL.SRC_DIR, "server", "**.cpp")
+        }
+
+        defines
+        {
+            "ASIO_STANDALONE"
         }
 
         filter "system:windows" 
