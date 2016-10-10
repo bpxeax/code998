@@ -8,11 +8,12 @@ solution "Jungle"
 
     filter {"configurations:debug"}
         defines "DEBUG"
-        symbols "on"
+        flags {"symbols"}
+        optimize "off"
         
     filter {"configurations:release"}
         defines "NDEBUG"
-        optimize "on"
+        optimize "speed"
 
     filter {"platforms: x86"}
         architecture "x86"
@@ -20,8 +21,8 @@ solution "Jungle"
     filter {"platforms: x64"}
         architecture "x86_64"
 
-    filter {"language:c++", "action:gmake"}
-        buildoptions "-std=c++11"
+    filter {"language:c++"}
+        flags "c++11"
 
     filter {}
 
