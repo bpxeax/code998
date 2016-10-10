@@ -40,4 +40,6 @@ function genClientProject()
                 "uv", 
                 "pthread"
             } 
+
+    project "*"
 end

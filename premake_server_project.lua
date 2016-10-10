@@ -46,4 +46,5 @@ function genServerProject()
                 "uv", 
                 "pthread"
             }
+    project "*"
 end

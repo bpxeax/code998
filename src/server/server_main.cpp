@@ -113,29 +113,68 @@ void onConnect(
     }
 }
 
+class Server
+{
+public:
+    Server(asio::io_context& io_context, short port)
+        : m_acceptor(io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+    {
+        doAccept();
+    }
+
+private:
+    void doAccept()
+    {
+        m_acceptor.async_accept(
+            [this](std::error_code ec, asio::ip::tcp::socket socket)
+            {
+                if (!ec)
+                {
+                    std::cout << "heheda" << std::endl;
+                }
+
+                doAccept();
+            }
+        );
+    }
+
+private:
+    asio::ip::tcp::acceptor m_acceptor;
+};
+
 int main()
 {
-    loop = uv_default_loop();
+    asio::io_context io_context;
 
-    uv_tcp_t server;
+    Server server(io_context, 10000);
 
-    uv_tcp_init(loop, &server);
+    std::cout << "begin..." << std::endl;
+    io_context.run();
+    std::cout << "end!" << std::endl;
 
-    sockaddr_in addr;
-    uv_ip4_addr("0.0.0.0", 10000, &addr);
+    return 0;
 
-    uv_tcp_bind(&server, (const sockaddr*)&addr, 0);
+    // loop = uv_default_loop();
 
-    int error_status = uv_listen((uv_stream_t*)&server, SOMAXCONN, onConnect);
-    if (error_status)
-    {
-        std::cout << "listen failed with " << uv_strerror(error_status) << std::endl;
-        return 1;
-    }
-    else
-    {
-        std::cout << "listening at: 10000 port" << std::endl;
-    }
+    // uv_tcp_t server;
 
-    return uv_run(loop, UV_RUN_DEFAULT);
+    // uv_tcp_init(loop, &server);
+
+    // sockaddr_in addr;
+    // uv_ip4_addr("0.0.0.0", 10000, &addr);
+
+    // uv_tcp_bind(&server, (const sockaddr*)&addr, 0);
+
+    // int error_status = uv_listen((uv_stream_t*)&server, SOMAXCONN, onConnect);
+    // if (error_status)
+    // {
+    //     std::cout << "listen failed with " << uv_strerror(error_status) << std::endl;
+    //     return 1;
+    // }
+    // else
+    // {
+    //     std::cout << "listening at: 10000 port" << std::endl;
+    // }
+
+    // return uv_run(loop, UV_RUN_DEFAULT);
 }

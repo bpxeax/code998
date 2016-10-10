@@ -36,6 +36,10 @@ solution "Jungle"
     genServerProject()
     genS5ProxyTestProject()
 
+    group "tests"
+
+    group ""
+
 
 local clean = function()
     os.rmdir (GLOBAL.OUT_ROOT_DIR)

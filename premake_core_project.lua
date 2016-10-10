@@ -15,4 +15,5 @@ function genCoreProject()
             path.join(GLOBAL.SRC_DIR, "core", "**.h"),
             path.join(GLOBAL.SRC_DIR, "core", "**.cpp")
         }
+    project "*"
 end
