@@ -4,11 +4,11 @@ solution "Jungle"
     configurations {"debug", "release"}
     platforms {"x86", "x64"}
     location (GLOBAL.BUILD_DIR)
-    libdirs {path.join(GLOBAL.PACKAGE_DIR, "/**")}
+    libdirs {path.join(GLOBAL.PACKAGE_DIR, "**")}
 
     filter {"configurations:debug"}
         defines "DEBUG"
-        flags {"symbols"}
+        symbols "On"
         optimize "off"
         
     filter {"configurations:release"}
