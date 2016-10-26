@@ -1,154 +1,53 @@
 #include <iostream>
 #include <string>
-#include <cstring>
-#include <assert.h>
+#include "asio.hpp"
 
-extern "C"
+using UDP = asio::ip::udp;
+
+int main(int argc, char* argv[])
 {
-#include "uv.h"
-}
-
-typedef struct {
-    uv_write_t req;
-    uv_buf_t buf;
-} write_req_t;
-
-void onClose(uv_handle_t* peer)
-{
-    delete peer;
-}
-
-void afterShutdown(uv_shutdown_t* req, int status)
-{
-    uv_close((uv_handle_t*)req->handle, onClose);
-    delete req;
-}
-
-void allocateBuffer(
-    uv_handle_t* handle,
-    size_t suggested_size,
-    uv_buf_t* buf)
-{
-    buf->base = new char[suggested_size];
-    buf->len = suggested_size;
-}
-
-void afterWrite(uv_write_t* req, int status)
-{
-    write_req_t* write_request = reinterpret_cast<write_req_t*>(req);
-
-    if (status)
+    try
     {
-        std::cout << "write error: " << uv_strerror(status) << std::endl;
+        std::string host("127.0.0.1");
+        std::string port("10000");
 
-        delete[] write_request->buf.base;
-        delete write_request;
-
-        uv_shutdown_t* shutdown_req = new uv_shutdown_t();
-        uv_shutdown(shutdown_req, req->handle, afterShutdown);
-        return;
-    }
-
-    std::cout << "you: ";
-    std::string content;
-    std::cin >> content;
-
-    delete[] write_request->buf.base;
-    write_request->buf.base = new char[content.length()];
-    write_request->buf.len = content.length();
-
-    std::memcpy(write_request->buf.base, content.c_str(), write_request->buf.len);
-
-    uv_write(&write_request->req, req->handle, &write_request->buf, 1, afterWrite);
-}
-
-void afterRead(
-    uv_stream_t* stream,
-    ssize_t nread,
-    const uv_buf_t* buf)
-{
-    if (nread < 0)
-    {
-        if (nread == UV_EOF)
+        if (argc >= 3)
         {
-            std::cout << "read end of stream!" << std::endl;
-        }
-        else
-        {
-            std::cout << "read error: " << uv_strerror(nread) << std::endl;
+            host = std::string(argv[1]);
+            port = std::string(argv[2]);
         }
 
-        delete[] buf->base;
-        uv_shutdown_t* shutdown_request = new uv_shutdown_t;
-        assert(uv_shutdown(shutdown_request, stream, afterShutdown) == 0);
-        return;
-    }
+        asio::io_context looper;
 
-    if (nread == 0)
+        UDP::socket sender(looper, UDP::endpoint(UDP::v4(), 0));
+
+        UDP::resolver resolver(looper);
+        std::error_code resolve_err;
+        UDP::endpoint end_point = resolver.resolve(host, port, resolve_err)->endpoint();
+
+        if (resolve_err)
+        {
+            std::cerr << "resolve address error: " << resolve_err.message() << std::endl;
+            return 1;
+        }
+
+        std::cout << "Please enter message: " << std::endl;
+        char buffer[1024];
+        std::cin.getline(buffer, 1024);
+        size_t msg_length = std::strlen(buffer);
+        sender.send_to(asio::buffer(buffer, msg_length), end_point);
+
+        char reply[1024];
+        UDP::endpoint replyer_endpoint;
+        const size_t reply_length = sender.receive_from(asio::buffer(reply, 1024), replyer_endpoint);
+        std::cout << "Reply: " << std::endl;
+        std::cout.write(reply, reply_length);
+        std::cout << std::endl;
+    }
+    catch(std::exception& e)
     {
-        delete[] buf->base;
-        return;
+        std::cerr << "exception: " << e.what() << std::endl;
     }
-
-    std::string receive_content(buf->base, nread);
-    std::cout << "server: " << receive_content.c_str() << std::endl;
-    delete[] buf->base;
-}
-
-void onConnect(uv_connect_t* connection, int status)
-{
-    if (status)
-    {
-        std::cout << "connect error: " << uv_strerror(status) << std::endl;
-        delete connection;
-        return;
-    }
-
-    std::cout << "you: ";
-    std::string content;
-    std::cin >> content;
-
-    uv_buf_t buffer;
-    buffer.len = content.length();
-    buffer.base = new char[buffer.len];
-    std::memcpy(buffer.base, content.c_str(), buffer.len);
-
-    write_req_t* write_request = new write_req_t();
-    write_request->buf = buffer;
-
-    int operator_status = 0;
-    if (operator_status = uv_write(&write_request->req, connection->handle, &write_request->buf, 1, afterWrite))
-    {
-        std::cout << "start write error: " << uv_strerror(operator_status) << std::endl;
-
-        uv_shutdown_t* shutdown_req = new uv_shutdown_t();
-        uv_shutdown(shutdown_req, connection->handle, afterShutdown);
-        return;
-    }
-    
-    if (operator_status = uv_read_start(connection->handle, allocateBuffer, afterRead))
-    {
-        std::cout << "start read error: " << uv_strerror(operator_status) << std::endl;
-
-        uv_shutdown_t* shutdown_req = new uv_shutdown_t();
-        uv_shutdown(shutdown_req, connection->handle, afterShutdown);
-        return;
-    }
-}
-
-int main()
-{
-    uv_tcp_t* socket = new uv_tcp_t();
-    uv_tcp_init(uv_default_loop(), socket);
-
-    uv_connect_t* connect = new uv_connect_t;
-
-    sockaddr_in dest;
-    uv_ip4_addr("127.0.0.1", 10000, &dest);
-
-    uv_tcp_connect(connect, socket, (const sockaddr*)&dest, onConnect);
-
-    uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
     return 0;
 }

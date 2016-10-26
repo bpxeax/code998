@@ -30,12 +30,12 @@ solution "Jungle"
     
     dofile("premake_client_project.lua")
     dofile("premake_server_project.lua")
-    dofile("premake_s5proxy_project.lua")
+    --dofile("premake_s5proxy_project.lua")
 
     genCoreProject()
     genClientProject()
     genServerProject()
-    genS5ProxyTestProject()
+    --genS5ProxyTestProject()
 
     group "tests"
 
