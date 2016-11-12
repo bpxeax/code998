@@ -21,7 +21,7 @@ public:
             {
                 if (!err && received_byte_count > 0)
                 {
-                    std::cout << "receiver: ";
+                    std::cout << "receive from  " << m_sender_endpoint.address().to_string() << ":" << m_sender_endpoint.port() << std::endl;
                     std::cout.write(m_data, received_byte_count);
                     std::cout << std::endl;
                     send(received_byte_count);
