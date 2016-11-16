@@ -15,5 +15,27 @@ function genCoreProject()
             path.join(GLOBAL.SRC_DIR, "core", "**.h"),
             path.join(GLOBAL.SRC_DIR, "core", "**.cpp")
         }
-    project "*"
+
+        defines
+        {
+            "ASIO_STANDALONE"
+        }
+
+        filter "system:windows" 
+            defines 
+            {
+                "_WIN32",
+                "_WIN32_WINNT=0x0501"
+            } 
+
+            links 
+            {
+
+            } 
+
+        filter "system:not windows" 
+            links 
+            {
+                --"pthread"
+            }
 end

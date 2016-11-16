@@ -26,17 +26,18 @@ solution "Jungle"
 
     filter {}
 
+    dofile("premake_parser_project.lua")
+
     dofile("premake_core_project.lua")
-    
     dofile("premake_client_project.lua")
     dofile("premake_server_project.lua")
-    --dofile("premake_s5proxy_project.lua")
 
-    genCoreProject()
-    genClientProject()
-    genServerProject()
-    --genS5ProxyTestProject()
-
+    group "tools"
+        genParserProject()
+    group "runtime"
+        genCoreProject()
+        genClientProject()
+        genServerProject()
     group "tests"
 
     group ""

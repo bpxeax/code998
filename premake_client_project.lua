@@ -37,7 +37,5 @@ function genClientProject()
             links 
             {
                 --"pthread"
-            } 
-
-    project "*"
+            }
 end

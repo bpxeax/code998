@@ -8,7 +8,8 @@ namespace CoolMonkey
     using UDP = asio::ip::udp;
     using TCP = asio::ip::tcp;
 
-    using IOContext = asio::io_context;
+    //using IOContext = asio::io_context;
+    class IOContext : public asio::io_context{};
 }
 
 #endif

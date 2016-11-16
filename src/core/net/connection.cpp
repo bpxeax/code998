@@ -28,7 +28,7 @@ namespace CoolMonkey
         const std::string host, 
         const std::string port)
     {
-
+        return nullptr;
     }
 
     void ConnectionFactory::deleteConnection(

@@ -38,5 +38,4 @@ function genServerProject()
             {
                 --"pthread"
             }
-    project "*"
 end

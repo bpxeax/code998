@@ -57,5 +57,4 @@ function genS5ProxyTestProject()
                 "uv", 
                 "pthread"
             } 
-    project "*"
 end
