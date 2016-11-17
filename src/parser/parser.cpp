@@ -1,6 +1,7 @@
 #include "parser.h"
 #include <fstream>
 #include <iostream>
+#include <list>
 
 
 namespace CoolMonkey
@@ -55,7 +56,7 @@ namespace CoolMonkey
 
     void MetaDataParser::Parse(void)
     {
-        m_index = clang_createIndex(true, m_parse_options.m_display_debug_info);
+        m_index = clang_createIndex(1, static_cast<int>(m_parse_options.m_display_debug_info));
 
         std::vector<const char*> arguments;
 
@@ -91,13 +92,63 @@ namespace CoolMonkey
 
         auto visitor = [](CXCursor child_cursor, CXCursor parent_cursor, CXClientData data) -> CXChildVisitResult
         {
-            CXString kind_string = clang_getCursorDisplayName(child_cursor);
-            std::cout << clang_getCString(kind_string) << std::endl;
+            if (clang_getCursorKind(child_cursor) == CXCursorKind::CXCursor_MacroDefinition)
+            {
+                return CXChildVisitResult::CXChildVisit_Continue;
+            }
+
+            std::list<CXCursor>* child_cursors = static_cast<std::list<CXCursor>*>(data);
+
+            CXString display_name_string = clang_getCursorDisplayName(child_cursor);
+            CXString kind_string = clang_getCursorKindSpelling(clang_getCursorKind(child_cursor));
+            CXString spelling_string = clang_getCursorSpelling(child_cursor);
+            CX_CXXAccessSpecifier access = clang_getCXXAccessSpecifier(child_cursor);
+
+            std::cout << "display: " << clang_getCString(display_name_string) << std::endl;
+            std::cout << "kind: " << clang_getCString(kind_string) << std::endl;
+            std::cout << "spelling: " << clang_getCString(spelling_string) << std::endl;
+            std::string access_string = "invalid";
+            switch (access)
+            {
+            case CX_CXXAccessSpecifier::CX_CXXPrivate:
+                access_string = "private";
+                break;
+            case CX_CXXAccessSpecifier::CX_CXXProtected:
+                access_string = "protected";
+                break;
+            case CX_CXXAccessSpecifier::CX_CXXPublic:
+                access_string = "public";
+                break;
+            }
+
+            std::cout << "access: " << access_string << std::endl;
+
+            if (clang_getCursorKind(child_cursor) == CXCursorKind::CXCursor_AnnotateAttr)
+            {
+                CXString parent_string = clang_getCursorDisplayName(parent_cursor);
+                std::cout << "parent: " << clang_getCString(parent_string) << std::endl;
+                clang_disposeString(parent_string);
+            }
+
+            clang_disposeString(display_name_string);
             clang_disposeString(kind_string);
+            clang_disposeString(spelling_string);
+
+            if (child_cursors)
+            {
+                child_cursors->push_back(child_cursor);
+            }
 
             return CXChildVisitResult::CXChildVisit_Continue;
         };
 
-        clang_visitChildren(cursor, visitor, nullptr);
+        std::list<CXCursor> cursors;
+        clang_visitChildren(cursor, visitor, &cursors);
+
+        while(cursors.empty() == false)
+        {
+            clang_visitChildren(cursors.front(), visitor, &cursors);
+            cursors.pop_front();
+        }
     }
 }

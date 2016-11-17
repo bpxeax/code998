@@ -5,8 +5,8 @@ public:
     float nima;
 
 private:
-    double you;
+    double you __attribute__((annotate("func")));
 
 public:
     int test(float value);
-};
+}__attribute__((annotate("enable")));
