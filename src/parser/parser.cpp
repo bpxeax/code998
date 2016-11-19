@@ -104,6 +104,7 @@ namespace CoolMonkey
             CXString spelling_string = clang_getCursorSpelling(child_cursor);
             CX_CXXAccessSpecifier access = clang_getCXXAccessSpecifier(child_cursor);
 
+            std::cout << "----------------------------------------------------" << std::endl;
             std::cout << "display: " << clang_getCString(display_name_string) << std::endl;
             std::cout << "kind: " << clang_getCString(kind_string) << std::endl;
             std::cout << "spelling: " << clang_getCString(spelling_string) << std::endl;
@@ -129,6 +130,8 @@ namespace CoolMonkey
                 std::cout << "parent: " << clang_getCString(parent_string) << std::endl;
                 clang_disposeString(parent_string);
             }
+
+            std::cout << "----------------------------------------------------" << std::endl;
 
             clang_disposeString(display_name_string);
             clang_disposeString(kind_string);

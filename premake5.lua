@@ -32,6 +32,8 @@ solution "Jungle"
     dofile("premake_client_project.lua")
     dofile("premake_server_project.lua")
 
+    dofile("premake_parser_test_project.lua");
+
     group "tools"
         genParserProject()
     group "runtime"
@@ -39,7 +41,7 @@ solution "Jungle"
         genClientProject()
         genServerProject()
     group "tests"
-
+        genParserTestProject()
     group ""
 
 

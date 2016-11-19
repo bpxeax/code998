@@ -1,3 +1,5 @@
+#include "core/compile/common_macros.h"
+
 class Test
 {
 public:
@@ -5,8 +7,8 @@ public:
     float nima;
 
 private:
-    double you __attribute__((annotate("func")));
+    double you MetaData("field");
 
 public:
     int test(float value);
-}__attribute__((annotate("enable")));
+}MetaData("type");
