@@ -10,3 +10,18 @@ GLOBAL.BIN_OUT_DIR = path.join(GLOBAL.OUT_ROOT_DIR, "bin/%{cfg.buildcfg}/%{cfg.p
 GLOBAL.PACKAGE_DIR = path.join(GLOBAL.PACKAGE_ROOT_DIR, "%{cfg.buildcfg}/%{cfg.platform}")
 GLOBAL.SRC_DIR = path.join(GLOBAL.ROOT_DIR, "src")
 GLOBAL.BUILD_DIR = path.join(GLOBAL.BUILD_ROOT_DIR, _ACTION)
+
+function callCodeGenPrebuild(...)
+    local src_dirs = "";
+    for _, dir in ipairs({...}) do
+        src_dirs = src_dirs..dir..";";
+    end
+
+    print(src_dirs);
+
+    local command = "{ECHO} "..src_dirs;
+
+    prebuildcommands {
+        command
+    }
+end
