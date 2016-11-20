@@ -89,70 +89,67 @@ namespace CoolMonkey
 
         auto visitor = [](CXCursor child_cursor, CXCursor parent_cursor, CXClientData data) -> CXChildVisitResult
         {
-            if(clang_Location_isFromMainFile(clang_getCursorLocation(child_cursor)) == 0)
+            if(clang_Location_isInSystemHeader(clang_getCursorLocation(child_cursor)) != 0)
             {
                 return CXChildVisitResult::CXChildVisit_Continue;
             }
 
-            if (clang_getCursorKind(child_cursor) == CXCursorKind::CXCursor_MacroDefinition)
-            {
-                return CXChildVisitResult::CXChildVisit_Continue;
-            }
+            CXCursorKind current_cursor_kind = clang_getCursorKind(child_cursor);
 
-            if (clang_getCursorKind(child_cursor) == CXCursorKind::CXCursor_LastPreprocessing)
+            /*if (current_cursor_kind == CXCursorKind::CXCursor_LastPreprocessing)
             {
                 return CXChildVisitResult::CXChildVisit_Break;
-            }
+            }*/
 
             std::list<CXCursor>* child_cursors = static_cast<std::list<CXCursor>*>(data);
 
-            CXString display_name_string = clang_getCursorDisplayName(child_cursor);
-            CXString kind_string = clang_getCursorKindSpelling(clang_getCursorKind(child_cursor));
-            CXString spelling_string = clang_getCursorSpelling(child_cursor);
-            CX_CXXAccessSpecifier access = clang_getCXXAccessSpecifier(child_cursor);
-
-            CXSourceLocation cursor_location = clang_getCursorLocation(child_cursor);
-            CXFile file;
-            unsigned int  line, column, offset;
-            clang_getFileLocation(cursor_location, &file, &line, &column, &offset);
-            CXString file_name_string = clang_getFileName(file);
-            std::cout << "parsing file: " << clang_getCString(file_name_string) << std::endl;
-            clang_disposeString(file_name_string);
-
-            /*std::cout << "----------------------------------------------------" << std::endl;
-            std::cout << "display: " << clang_getCString(display_name_string) << std::endl;
-            std::cout << "kind: " << clang_getCString(kind_string) << std::endl;
-            std::cout << "spelling: " << clang_getCString(spelling_string) << std::endl;
-            std::string access_string = "invalid";
-            switch (access)
+            if (current_cursor_kind == CXCursorKind::CXCursor_AnnotateAttr)
             {
-            case CX_CXXAccessSpecifier::CX_CXXPrivate:
-                access_string = "private";
-                break;
-            case CX_CXXAccessSpecifier::CX_CXXProtected:
-                access_string = "protected";
-                break;
-            case CX_CXXAccessSpecifier::CX_CXXPublic:
-                access_string = "public";
-                break;
-            default:
-                break;
-            }
+                CXString display_name_string = clang_getCursorDisplayName(child_cursor);
+                CXString kind_string = clang_getCursorKindSpelling(clang_getCursorKind(child_cursor));
+                CXString spelling_string = clang_getCursorSpelling(child_cursor);
+                CX_CXXAccessSpecifier access = clang_getCXXAccessSpecifier(child_cursor);
 
-            std::cout << "access: " << access_string << std::endl;
+                CXSourceLocation cursor_location = clang_getCursorLocation(child_cursor);
+                CXFile file;
+                unsigned int  line, column, offset;
+                clang_getFileLocation(cursor_location, &file, &line, &column, &offset);
+                CXString file_name_string = clang_getFileName(file);
+                std::cout << "parsing file: " << clang_getCString(file_name_string) << std::endl;
+                clang_disposeString(file_name_string);
 
-            if (clang_getCursorKind(child_cursor) == CXCursorKind::CXCursor_AnnotateAttr)
-            {
+                std::cout << "----------------------------------------------------" << std::endl;
+                std::cout << "display: " << clang_getCString(display_name_string) << std::endl;
+                std::cout << "kind: " << clang_getCString(kind_string) << std::endl;
+                std::cout << "spelling: " << clang_getCString(spelling_string) << std::endl;
+                std::string access_string = "invalid";
+                switch (access)
+                {
+                case CX_CXXAccessSpecifier::CX_CXXPrivate:
+                    access_string = "private";
+                    break;
+                case CX_CXXAccessSpecifier::CX_CXXProtected:
+                    access_string = "protected";
+                    break;
+                case CX_CXXAccessSpecifier::CX_CXXPublic:
+                    access_string = "public";
+                    break;
+                default:
+                    break;
+                }
+
+                std::cout << "access: " << access_string << std::endl;
+
                 CXString parent_string = clang_getCursorDisplayName(parent_cursor);
                 std::cout << "parent: " << clang_getCString(parent_string) << std::endl;
                 clang_disposeString(parent_string);
+
+                std::cout << "----------------------------------------------------" << std::endl;
+
+                clang_disposeString(display_name_string);
+                clang_disposeString(kind_string);
+                clang_disposeString(spelling_string);
             }
-
-            std::cout << "----------------------------------------------------" << std::endl;*/
-
-            clang_disposeString(display_name_string);
-            clang_disposeString(kind_string);
-            clang_disposeString(spelling_string);
 
             if (child_cursors)
             {

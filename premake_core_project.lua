@@ -7,7 +7,7 @@ function genCoreProject(prj_name)
         
         includedirs 
         {
-            path.join(GLOBAL.THIRD_SRC_DIR, "asio/")
+            path.join(GLOBAL.THIRD_SRC_DIR, "asio")
         }
 
         files
