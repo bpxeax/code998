@@ -22,29 +22,10 @@ namespace CoolMonkey
         void Parse(void);
 
     private:
-        /*void buildClasses(
-            const Cursor &cursor,
-            Namespace &currentNamespace
-        );
-
-        void buildGlobals(
-            const Cursor &cursor,
-            Namespace &currentNamespace
-        );
-
-        void buildGlobalFunctions(
-            const Cursor &cursor,
-            Namespace &currentNamespace
-        );
-
-        void buildEnums(
-            const Cursor &cursor,
-            Namespace &currentNamespace
-        );*/
+        static void getHeaderFilesInDirectory(const std::string& path, std::vector<std::string>& out_header_files);
+        static void parseSingleFile(const std::string& file_path, bool is_debug, std::vector<const char*>& arguments);
 
     private:
-        CXIndex m_index {nullptr};
-        CXTranslationUnit m_translationUnit {nullptr};
         MetaDataParserOptions m_parse_options;
     };
 }

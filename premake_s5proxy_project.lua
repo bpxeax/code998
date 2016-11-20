@@ -8,7 +8,7 @@ function genS5ProxyTestProject(prj_name)
 
         includedirs
         {
-            path.join(GLOBAL.SRC_DIR, "3rd/libuv/include")
+            path.join(GLOBAL.THIRD_SRC_DIR, "libuv/include")
         }
 
         files

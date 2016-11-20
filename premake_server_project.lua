@@ -7,12 +7,13 @@ function genServerProject(prj_name)
 
         includedirs
         {
-            path.join(GLOBAL.SRC_DIR, "3rd/asio")
+            path.join(GLOBAL.THIRD_SRC_DIR, "asio")
         }
 
         files
         {
             path.join(GLOBAL.SRC_DIR, "server", "**.h"),
+            path.join(GLOBAL.SRC_DIR, "server", "**.hpp"),
             path.join(GLOBAL.SRC_DIR, "server", "**.cpp")
         }
 

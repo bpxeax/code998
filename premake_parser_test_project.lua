@@ -13,6 +13,7 @@ function genParserTestProject(prj_name)
         files
         {
             path.join(GLOBAL.SRC_DIR, "test/parser", "**.h"),
+            path.join(GLOBAL.SRC_DIR, "test/parser", "**.hpp"),
             path.join(GLOBAL.SRC_DIR, "test/parser", "**.cpp")
         }
 end

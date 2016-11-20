@@ -7,12 +7,13 @@ function genCoreProject(prj_name)
         
         includedirs 
         {
-            path.join(GLOBAL.SRC_DIR, "3rd/asio/")
+            path.join(GLOBAL.THIRD_SRC_DIR, "asio/")
         }
 
         files
         {
             path.join(GLOBAL.SRC_DIR, "core", "**.h"),
+            path.join(GLOBAL.SRC_DIR, "core", "**.hpp"),
             path.join(GLOBAL.SRC_DIR, "core", "**.cpp")
         }
 

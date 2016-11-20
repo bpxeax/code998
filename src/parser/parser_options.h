@@ -12,7 +12,9 @@ namespace CoolMonkey
         bool m_force_rebuild{ false };
         bool m_display_debug_info{ false };
 
-        std::string m_source_file_name;
+        std::string m_source_file_dir;
+        std::string m_dest_file_dir;
+
         std::vector<std::string> m_arguments;
     };
 }

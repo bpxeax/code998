@@ -7,7 +7,7 @@ function genClientProject(prj_name)
 
         includedirs
         {
-            path.join(GLOBAL.SRC_DIR, "3rd/asio")
+            path.join(GLOBAL.THIRD_SRC_DIR, "asio")
         }
 
         defines
@@ -18,6 +18,7 @@ function genClientProject(prj_name)
         files
         {
             path.join(GLOBAL.SRC_DIR, "client", "**.h"),
+            path.join(GLOBAL.SRC_DIR, "client", "**.hpp"),
             path.join(GLOBAL.SRC_DIR, "client", "**.cpp")
         }
 

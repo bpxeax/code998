@@ -1,63 +1,24 @@
 #include "parser.h"
-#include <fstream>
+#include "boost/filesystem.hpp"
 #include <iostream>
 #include <list>
 
 
 namespace CoolMonkey
 {
-#define RECURSE_NAMESPACES(kind, cursor, method, ns) \
-    if (kind == CXCursor_Namespace)                  \
-    {                                                \
-        auto displayName = cursor.GetDisplayName( ); \
-        if (!displayName.empty( ))                   \
-        {                                            \
-            ns.emplace_back( displayName );          \
-            method( cursor, ns );                    \
-            ns.pop_back( );                          \
-        }                                            \
-    }                                                \
-
-#define TRY_ADD_LANGUAGE_TYPE(handle, container)                \
-    if (handle->ShouldCompile( ))                               \
-    {                                                           \
-        auto file = handle->GetSourceFile( );                   \
-        m_moduleFiles[ file ].container.emplace_back( handle ); \
-    }                                                           \
-
-#define COMPILE_TYPE_TEMPLATES(data, listName, container)   \
-    {                                                       \
-        TemplateData typeData { TemplateData::Type::List }; \
-        for (auto &handle : container)                      \
-            typeData << handle->CompileTemplate( this );    \
-        data[ listName ] = typeData;                        \
-    }
-
     MetaDataParser::MetaDataParser(const MetaDataParserOptions &options)
         : m_parse_options(options)
-        , m_index(nullptr)
-        , m_translationUnit(nullptr)
     {
 
     }
 
     MetaDataParser::~MetaDataParser(void)
     {
-        if (m_translationUnit)
-        {
-            clang_disposeTranslationUnit(m_translationUnit);
-        }
 
-        if (m_index)
-        {
-            clang_disposeIndex(m_index);
-        }
     }
 
     void MetaDataParser::Parse(void)
     {
-        m_index = clang_createIndex(1, static_cast<int>(m_parse_options.m_display_debug_info));
-
         std::vector<const char*> arguments;
 
         if (m_parse_options.m_display_debug_info)
@@ -79,22 +40,68 @@ namespace CoolMonkey
             std::cout << "-------------------------------------" << std::endl;
         }
 
-        m_translationUnit = clang_createTranslationUnitFromSourceFile(
-            m_index,
-            m_parse_options.m_source_file_name.c_str(),
+        std::vector<std::string> all_header_files;
+        getHeaderFilesInDirectory(m_parse_options.m_source_file_dir, all_header_files);
+
+        for (const auto& header_file : all_header_files)
+        {
+            parseSingleFile(header_file, m_parse_options.m_display_debug_info, arguments);
+        }
+    }
+
+    void MetaDataParser::getHeaderFilesInDirectory(const std::string& path, std::vector<std::string>& out_header_files)
+    {
+        boost::filesystem::recursive_directory_iterator iter_end;
+        boost::filesystem::recursive_directory_iterator src_file_iter(path);
+        for (; src_file_iter != iter_end; ++src_file_iter)
+        {
+            auto current_path = src_file_iter->path();
+            if (boost::filesystem::is_directory(current_path))
+            {
+                getHeaderFilesInDirectory(current_path.string(), out_header_files);
+            }
+            else
+            {
+                const std::string file_extension = current_path.extension().string();
+                if (file_extension == ".h" ||
+                    file_extension == ".hpp")
+                {
+                    out_header_files.emplace_back(current_path.string());
+                }
+            }
+        }
+    }
+
+    void MetaDataParser::parseSingleFile(const std::string& file_path, bool is_debug, std::vector<const char*>& arguments)
+    {
+        CXIndex cursor_index = clang_createIndex(1, static_cast<int>(is_debug));
+
+        CXTranslationUnit translation_unit = clang_createTranslationUnitFromSourceFile(
+            cursor_index,
+            file_path.c_str(),
             static_cast<int>(arguments.size()),
             arguments.data(),
             0,
             nullptr
         );
 
-        CXCursor cursor = clang_getTranslationUnitCursor(m_translationUnit);
+        CXCursor cursor = clang_getTranslationUnitCursor(translation_unit);
 
         auto visitor = [](CXCursor child_cursor, CXCursor parent_cursor, CXClientData data) -> CXChildVisitResult
         {
+            if(clang_Location_isFromMainFile(clang_getCursorLocation(child_cursor)) == 0)
+            {
+                return CXChildVisitResult::CXChildVisit_Continue;
+            }
+
             if (clang_getCursorKind(child_cursor) == CXCursorKind::CXCursor_MacroDefinition)
             {
                 return CXChildVisitResult::CXChildVisit_Continue;
+            }
+
+            if (clang_getCursorKind(child_cursor) == CXCursorKind::CXCursor_LastPreprocessing)
+            {
+                return CXChildVisitResult::CXChildVisit_Break;
             }
 
             std::list<CXCursor>* child_cursors = static_cast<std::list<CXCursor>*>(data);
@@ -104,7 +111,15 @@ namespace CoolMonkey
             CXString spelling_string = clang_getCursorSpelling(child_cursor);
             CX_CXXAccessSpecifier access = clang_getCXXAccessSpecifier(child_cursor);
 
-            std::cout << "----------------------------------------------------" << std::endl;
+            CXSourceLocation cursor_location = clang_getCursorLocation(child_cursor);
+            CXFile file;
+            unsigned int  line, column, offset;
+            clang_getFileLocation(cursor_location, &file, &line, &column, &offset);
+            CXString file_name_string = clang_getFileName(file);
+            std::cout << "parsing file: " << clang_getCString(file_name_string) << std::endl;
+            clang_disposeString(file_name_string);
+
+            /*std::cout << "----------------------------------------------------" << std::endl;
             std::cout << "display: " << clang_getCString(display_name_string) << std::endl;
             std::cout << "kind: " << clang_getCString(kind_string) << std::endl;
             std::cout << "spelling: " << clang_getCString(spelling_string) << std::endl;
@@ -120,6 +135,8 @@ namespace CoolMonkey
             case CX_CXXAccessSpecifier::CX_CXXPublic:
                 access_string = "public";
                 break;
+            default:
+                break;
             }
 
             std::cout << "access: " << access_string << std::endl;
@@ -131,7 +148,7 @@ namespace CoolMonkey
                 clang_disposeString(parent_string);
             }
 
-            std::cout << "----------------------------------------------------" << std::endl;
+            std::cout << "----------------------------------------------------" << std::endl;*/
 
             clang_disposeString(display_name_string);
             clang_disposeString(kind_string);
@@ -148,10 +165,14 @@ namespace CoolMonkey
         std::list<CXCursor> cursors;
         clang_visitChildren(cursor, visitor, &cursors);
 
-        while(cursors.empty() == false)
+        while (cursors.empty() == false)
         {
             clang_visitChildren(cursors.front(), visitor, &cursors);
             cursors.pop_front();
         }
+
+        clang_disposeTranslationUnit(translation_unit);
+        clang_disposeIndex(cursor_index);
     }
+
 }
