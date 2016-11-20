@@ -1,5 +1,5 @@
-function genParserTestProject()
-    project "ParserTest" 
+function genParserTestProject(prj_name)
+    project(prj_name)
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "ConsoleApp"
         language "C++"
@@ -15,6 +15,4 @@ function genParserTestProject()
             path.join(GLOBAL.SRC_DIR, "test/parser", "**.h"),
             path.join(GLOBAL.SRC_DIR, "test/parser", "**.cpp")
         }
-
-        callCodeGenPrebuild(path.join(GLOBAL.SRC_DIR, "test/parser"));
 end

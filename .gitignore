@@ -1,6 +1,7 @@
 build/
 output/
-src/autogen/
+gen_src/
+tools/
 .vscode/
 
 *.db

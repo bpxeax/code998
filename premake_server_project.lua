@@ -1,5 +1,5 @@
-function genServerProject()
-    project "server"
+function genServerProject(prj_name)
+    project(prj_name)
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "ConsoleApp"
         language "C++"

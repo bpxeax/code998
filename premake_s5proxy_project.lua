@@ -1,5 +1,5 @@
-function genS5ProxyTestProject()
-    project "S5ProxyTest"
+function genS5ProxyTestProject(prj_name)
+    project(prj_name)
         targetname "S5Proxy"
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "ConsoleApp"

@@ -1,5 +1,5 @@
-function genCoreProject()
-    project "core" 
+function genCoreProject(prj_name)
+    project(prj_name)
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "StaticLib"
         language "C++"
