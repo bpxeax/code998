@@ -14,9 +14,9 @@ function genCodeGenProject(prj_name)
             ["parse_headers"] = {"**.h", "**.hpp"}
         }
 
-        local common_parse_arguments = "-x c++ -std=c++1y -fsyntax-only -DCOOL_MONKEY_METADATA_PARSER"
+        local common_parse_arguments = "-x c++ -std=c++14 -DCOOL_MONKEY_METADATA_PARSER -D_WIN32 -D_WIN32_WINNT=0x0501 -DBOOST_USE_WINDOWS_H"
         common_parse_arguments = common_parse_arguments.." -I"..GLOBAL.SRC_DIR.." -I"..GLOBAL.THIRD_SRC_DIR.." -I"..path.join(GLOBAL.THIRD_SRC_DIR, "asio").." -I"..path.join(GLOBAL.THIRD_SRC_DIR, "libuv/include").." -I"..path.join("$(LLVM_ROOT)", "include").." -I"..path.join("$(BOOST_ROOT)")
-        local windows_parse_arguments = common_parse_arguments.." -fno-ms-compatibility"
+        local windows_parse_arguments = common_parse_arguments.." -fms-compatibility"
 
         prebuildmessage("MetaData parse");
 

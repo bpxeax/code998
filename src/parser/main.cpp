@@ -6,11 +6,7 @@ int main(int argc, char* argv[])
 {
     MetaDataParserOptions parser_options;
 
-#ifdef DEBUG
-    parser_options.m_display_debug_info = true;
-#else
     parser_options.m_display_debug_info = false;
-#endif
 
     if (argc < 4)
     {
@@ -39,7 +35,11 @@ int main(int argc, char* argv[])
     }
 
     MetaDataParser parser(parser_options);
-    parser.Parse();
+    
+    if (parser.Parse())
+    {
+        return 0;
+    }
 
-    return 0;
+    return -1;
 }

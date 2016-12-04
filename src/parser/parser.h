@@ -19,11 +19,11 @@ namespace CoolMonkey
         MetaDataParser(const MetaDataParserOptions &options);
         ~MetaDataParser(void);
 
-        void Parse(void);
+        bool Parse(void);
 
     private:
         static void getHeaderFilesInDirectory(const std::string& path, std::vector<std::string>& out_header_files);
-        static void parseSingleFile(const std::string& file_path, bool is_debug, std::vector<const char*>& arguments);
+        static bool parseSingleFile(const std::string& file_path, bool is_debug, std::vector<const char*>& arguments);
 
     private:
         MetaDataParserOptions m_parse_options;

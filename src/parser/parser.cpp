@@ -2,6 +2,7 @@
 #include "boost/filesystem.hpp"
 #include <iostream>
 #include <list>
+#include <sstream>
 
 
 namespace CoolMonkey
@@ -17,7 +18,7 @@ namespace CoolMonkey
 
     }
 
-    void MetaDataParser::Parse(void)
+    bool MetaDataParser::Parse(void)
     {
         std::vector<const char*> arguments;
 
@@ -43,10 +44,16 @@ namespace CoolMonkey
         std::vector<std::string> all_header_files;
         getHeaderFilesInDirectory(m_parse_options.m_source_file_dir, all_header_files);
 
+        bool parse_error = false;
         for (const auto& header_file : all_header_files)
         {
-            parseSingleFile(header_file, m_parse_options.m_display_debug_info, arguments);
+            if (parseSingleFile(header_file, m_parse_options.m_display_debug_info, arguments) == false)
+            {
+                parse_error = true;
+            }
         }
+
+        return !parse_error;
     }
 
     void MetaDataParser::getHeaderFilesInDirectory(const std::string& path, std::vector<std::string>& out_header_files)
@@ -72,7 +79,7 @@ namespace CoolMonkey
         }
     }
 
-    void MetaDataParser::parseSingleFile(const std::string& file_path, bool is_debug, std::vector<const char*>& arguments)
+    bool MetaDataParser::parseSingleFile(const std::string& file_path, bool is_debug, std::vector<const char*>& arguments)
     {
         CXIndex cursor_index = clang_createIndex(1, static_cast<int>(is_debug));
 
@@ -84,6 +91,64 @@ namespace CoolMonkey
             0,
             nullptr
         );
+
+        bool parse_error = false;
+        unsigned int diagnostic_count = clang_getNumDiagnostics(translation_unit);
+        for (unsigned int i = 0; i < diagnostic_count; ++i)
+        {
+            CXDiagnostic current_diagnostic = clang_getDiagnostic(translation_unit, i);
+            CXDiagnosticSeverity diagnostic_severity = clang_getDiagnosticSeverity(current_diagnostic);
+
+            if (diagnostic_severity == CXDiagnosticSeverity::CXDiagnostic_Error ||
+                diagnostic_severity == CXDiagnosticSeverity::CXDiagnostic_Fatal ||
+                diagnostic_severity == CXDiagnosticSeverity::CXDiagnostic_Warning)
+            {
+                CXString diagnostic_string = clang_getDiagnosticSpelling(current_diagnostic);
+
+                CXSourceLocation current_diagnostic_location = clang_getDiagnosticLocation(current_diagnostic);
+                CXFile file;
+                unsigned int  line, column, offset;
+                clang_getFileLocation(current_diagnostic_location, &file, &line, &column, &offset);
+                CXString file_name_string = clang_getFileName(file);
+
+                std::ostringstream location_str_stream;
+                location_str_stream << clang_getCString(file_name_string) << ":" << line << ":" << column;
+
+                char* diagnostic_type = "Unknown";
+                if (diagnostic_severity == CXDiagnosticSeverity::CXDiagnostic_Error)
+                {
+                    parse_error = true;
+                    diagnostic_type = "Error";
+                }
+                else if (diagnostic_severity == CXDiagnosticSeverity::CXDiagnostic_Fatal)
+                {
+                    parse_error = true;
+                    diagnostic_type = "Fatal";
+                }
+                else if (diagnostic_severity == CXDiagnosticSeverity::CXDiagnostic_Warning)
+                {
+                    diagnostic_type = "Warning";
+                }
+
+                if (is_debug == false)
+                {
+                    std::cerr << diagnostic_type << "==> " << location_str_stream.str() << ":" << clang_getCString(diagnostic_string) << std::endl;
+                }
+
+                clang_disposeString(diagnostic_string);
+                clang_disposeString(file_name_string);
+            }
+
+            clang_disposeDiagnostic(current_diagnostic);
+        }
+
+        if (parse_error)
+        {
+            clang_disposeTranslationUnit(translation_unit);
+            clang_disposeIndex(cursor_index);
+
+            return false;
+        }
 
         CXCursor cursor = clang_getTranslationUnitCursor(translation_unit);
 
@@ -170,6 +235,8 @@ namespace CoolMonkey
 
         clang_disposeTranslationUnit(translation_unit);
         clang_disposeIndex(cursor_index);
+
+        return true;
     }
 
 }
