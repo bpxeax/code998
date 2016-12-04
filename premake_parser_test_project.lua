@@ -1,4 +1,6 @@
-function genParserTestProject(prj_name)
+local prj_name="ParserTest"
+
+function genParserTestProject()
     project(prj_name)
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "ConsoleApp"
@@ -16,4 +18,6 @@ function genParserTestProject(prj_name)
             path.join(GLOBAL.SRC_DIR, "test/parser", "**.hpp"),
             path.join(GLOBAL.SRC_DIR, "test/parser", "**.cpp")
         }
+
+    return prj_name
 end

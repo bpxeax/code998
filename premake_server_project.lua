@@ -1,4 +1,6 @@
-function genServerProject(prj_name)
+local prj_name="server"
+
+function genServerProject()
     project(prj_name)
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "ConsoleApp"
@@ -31,12 +33,14 @@ function genServerProject(prj_name)
 
             links 
             {
-                
+                "core"
             } 
 
         filter "system:not windows" 
             links 
             {
-                --"pthread"
+                "core"
             }
+
+    return prj_name
 end

@@ -1,5 +1,5 @@
-#ifndef __COOL_MONKEY_BUILD_CONFIG_H__
-#define __COOL_MONKEY_BUILD_CONFIG_H__
+#ifndef __COOL_MONKEY_COMMON_MACROS_H__
+#define __COOL_MONKEY_COMMON_MACROS_H__
 
 #if defined (COOL_MONKEY_METADATA_PARSER)
     #define MetaData(...) __attribute__((annotate(#__VA_ARGS__)))

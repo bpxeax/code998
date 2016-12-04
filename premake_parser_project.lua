@@ -1,4 +1,6 @@
-function genParserProject(prj_name)
+local prj_name = "parser"
+
+function genParserProject()
     project(prj_name) 
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "ConsoleApp"
@@ -34,4 +36,6 @@ function genParserProject(prj_name)
         {
             "{COPY} %{cfg.linktarget.abspath} "..GLOBAL.GENERATORS_DIR
         }
+
+    return prj_name
 end

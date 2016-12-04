@@ -30,7 +30,7 @@ solution "Tools"
 
     ------ start generate projects ------
 
-    genParserProject("parser")
+    local parser_prj_name = genParserProject()
 
     ------ end generate projects ------
 
@@ -72,13 +72,13 @@ solution "Jungle"
     ------ start generate projects ------
 
     group "generators"
-        genCodeGenProject("CodeGen")
+        local code_gen_prj_name = genCodeGenProject()
     group "runtime"
-        genCoreProject("core")
-        genClientProject("client")
-        genServerProject("server")
+        local core_prj_name = genCoreProject()
+        local client_prj_name = genClientProject()
+        local server_prj_name = genServerProject()
     group "tests"
-        genParserTestProject("ParserTest")
+        local parser_test_prj_name = genParserTestProject()
     group ""
 
     project "*"
@@ -87,14 +87,16 @@ solution "Jungle"
 
     ------ set project dependencies ------
 
-    project "core"
-        dependson {"CodeGen"}
-    project "client"
-        dependson {"CodeGen"}
-    project "server"
-        dependson {"CodeGen"}
-    project "ParserTest"
-        dependson {"CodeGen"}
+    project(core_prj_name)
+        dependson {code_gen_prj_name}
+    project(client_prj_name)
+        useCoreLib()
+        dependson {code_gen_prj_name, core_prj_name}
+    project(server_prj_name)
+        useCoreLib()
+        dependson {code_gen_prj_name, core_prj_name}
+    project(parser_test_prj_name)
+        dependson {code_gen_prj_name}
     project "*"
 
     --------------------------------------

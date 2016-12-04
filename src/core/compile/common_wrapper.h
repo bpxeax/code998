@@ -1,0 +1,4 @@
+#ifndef __COOL_MONKEY_COMMON_WRAPPER_H__
+#define __COOL_MONKEY_COMMON_WRAPPER_H__
+
+#endif

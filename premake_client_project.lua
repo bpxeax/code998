@@ -1,4 +1,6 @@
-function genClientProject(prj_name)
+local prj_name = "client"
+
+function genClientProject()
     project(prj_name)
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "ConsoleApp"
@@ -31,12 +33,14 @@ function genClientProject(prj_name)
 
             links 
             {
-
+                "core"
             } 
 
         filter "system:not windows" 
             links 
             {
-                --"pthread"
+                "core"
             }
+
+    return prj_name
 end

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "asio.hpp"
+#include "script/lua/lua_context.h"
 
 using UDP = asio::ip::udp;
 
@@ -62,6 +63,10 @@ private:
 
 int main(int argc, char* argv[])
 {
+    CoolMonkey::LuaContext test_lua_context;
+
+    test_lua_context.executeString("print(\"hehe\")");
+
     try
     {
         short port = 10000;

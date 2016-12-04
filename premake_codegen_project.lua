@@ -1,4 +1,6 @@
-function genCodeGenProject(prj_name)
+local prj_name="CodeGen"
+
+function genCodeGenProject()
     project(prj_name)
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
         kind "Utility"
@@ -32,4 +34,6 @@ function genCodeGenProject(prj_name)
                 GLOBAL.GENERATORS_DIR.."/MetaDataParser".." ".."none".." "..GLOBAL.SRC_DIR.." "..GLOBAL.GEN_SRC_DIR.." "..common_parse_arguments
             }
         filter {}
+
+    return prj_name
 end

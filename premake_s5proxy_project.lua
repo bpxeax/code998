@@ -1,4 +1,6 @@
-function genS5ProxyTestProject(prj_name)
+local prj_name="S5ProxyTest"
+
+function genS5ProxyTestProject()
     project(prj_name)
         targetname "S5Proxy"
         location (GLOBAL.BUILD_DIR.."/%{prj.name}")
@@ -56,5 +58,7 @@ function genS5ProxyTestProject(prj_name)
             {
                 "uv", 
                 "pthread"
-            } 
+            }
+
+    return prj_name
 end
