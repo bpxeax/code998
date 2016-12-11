@@ -1,6 +1,7 @@
 #include <iostream>
 #include "asio.hpp"
 #include "script/lua/lua_context.h"
+#include "script/lua/c_to_lua_function_delegate.h"
 
 using UDP = asio::ip::udp;
 
@@ -61,11 +62,21 @@ private:
     char m_data[k_max_length]{ 0 };
 };
 
+int testFunc(int a, float b)
+{
+    std::cout << a << std::endl;
+    std::cout << b << std::endl;
+
+    return a + b;
+}
+
 int main(int argc, char* argv[])
 {
     CoolMonkey::LuaContext test_lua_context;
 
-    test_lua_context.executeString("print(\"hehe\")");
+    CoolMonkey::CToLuaFunctionDelegate<int, int, float>::addFunction(test_lua_context.m_lua_state, testFunc, "testCall");
+
+    test_lua_context.executeFile("d:/test.lua");
 
     try
     {

@@ -9,7 +9,7 @@ using std::string;
 
 namespace CoolMonkey
 {
-    template<typename T>
+    template<typename T, typename Enable = void>
     class CToLuaTypeDelegate
     {
     public:
@@ -24,9 +24,10 @@ namespace CoolMonkey
         }
     };
 
-    template<typename Boolean, typename std::enable_if<std::is_same<typename std::decay<Boolean>::type, bool>::value>::type>
-    class CToLuaTypeDelegate<Boolean>
+    template<typename Boolean>
+    class CToLuaTypeDelegate<Boolean, typename std::enable_if<std::is_same<typename std::decay<Boolean>::type, bool>::value>::type>
     {
+    public:
         static void pushValueToLua(lua_State* lua_state, Boolean&& value)
         {
             lua_pushboolean(lua_state, static_cast<int>(value));
@@ -44,9 +45,10 @@ namespace CoolMonkey
         }
     };
 
-    template<typename Number, typename std::enable_if<std::is_arithmetic<Number>::value && !(std::is_same<typename std::decay<Number>::type, bool>::value)>::type>
-    class CToLuaTypeDelegate<Number>
+    template<typename Number>
+    class CToLuaTypeDelegate<Number, typename std::enable_if<std::is_arithmetic<typename std::decay<Number>::type>::value && !(std::is_same<typename std::decay<Number>::type, bool>::value)>::type>
     {
+    public:
         static void pushValueToLua(lua_State* lua_state, Number&& value)
         {
             lua_pushnumber(lua_state, static_cast<lua_Number>(value));
@@ -64,9 +66,10 @@ namespace CoolMonkey
         }
     };
 
-    template<typename StringType, typename std::enable_if<std::is_same<typename std::decay<StringType>::type, string>::value>::type>
-    class CToLuaTypeDelegate<StringType>
+    template<typename StringType>
+    class CToLuaTypeDelegate<StringType, typename std::enable_if<std::is_same<typename std::decay<StringType>::type, string>::value>::type>
     {
+    public:
         static void pushValueToLua(lua_State* lua_state, StringType&& value)
         {
             lua_pushstring(lua_state, value.c_str());

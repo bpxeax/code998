@@ -51,6 +51,11 @@ function useCoreLib()
         path.join("$(LUAJIT_ROOT)", "src")
     }
 
+    includedirs 
+    {
+        path.join("$(LUAJIT_ROOT)", "src")
+    }
+
     includedirs{path.join(GLOBAL.SRC_DIR, "core")}
     links 
     {

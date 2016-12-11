@@ -24,7 +24,7 @@ namespace CoolMonkey
         LuaContext();
         ~LuaContext();
 
-    private:
+    public:
         lua_State* m_lua_state{ nullptr };
     };
 }
