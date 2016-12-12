@@ -42,12 +42,6 @@ namespace CoolMonkey
         using type = THead;
     };
 
-    template<size_t N, typename... Args>
-    typename VariadicParameterExtractor<N, Args...>::type getValuesFromLua(lua_State* lua_state)
-    {
-        return CToLuaTypeDelegate<typename VariadicParameterExtractor<N, Args...>::type>::getValueFromLua(lua_state, static_cast<int>(sizeof...(Args) - N));
-    }
-
     template<size_t...>
     struct IndexSequence {};
 
@@ -114,7 +108,8 @@ namespace CoolMonkey
         static Ret callFunction(lua_State* lua_state, IndexSequence<seq...>)
         {
             DelegateFuncType func_instance = static_cast<DelegateFuncType>(lua_touserdata(lua_state, lua_upvalueindex(1)));
-            return func_instance(getValuesFromLua<seq, Args...>(lua_state)...);
+
+            return func_instance(CToLuaTypeDelegate<typename VariadicParameterExtractor<seq, Args...>::type>::getValueFromLua(lua_state, static_cast<int>(sizeof...(Args)-seq))...);
         }
     };
 }
