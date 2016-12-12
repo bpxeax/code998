@@ -62,10 +62,11 @@ private:
     char m_data[k_max_length]{ 0 };
 };
 
-int testFunc(int a, float b)
+int testFunc(int a, float b, std::string c)
 {
-    std::cout << a << std::endl;
-    std::cout << b << std::endl;
+    std::cout << "int: " << a << std::endl;
+    std::cout << "float: " << b << std::endl;
+    std::cout << "string: " << c << std::endl;
 
     return a + b;
 }
@@ -74,7 +75,7 @@ int main(int argc, char* argv[])
 {
     CoolMonkey::LuaContext test_lua_context;
 
-    CoolMonkey::CToLuaFunctionDelegate<int, int, float>::addFunction(test_lua_context.m_lua_state, testFunc, "testCall");
+    CoolMonkey::CToLuaFunctionDelegate<int, int, float, std::string>::addFunction(test_lua_context.m_lua_state, testFunc, "testCall");
 
     test_lua_context.executeFile("d:/test.lua");
 

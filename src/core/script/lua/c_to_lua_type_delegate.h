@@ -18,7 +18,7 @@ namespace CoolMonkey
             static_assert(false, "not implement push value to lua");
         }
 
-        static T getValueFromLua(lua_State* lua_state)
+        static T getValueFromLua(lua_State* lua_state, int value_index = 1)
         {
             static_assert(false, "not implement get value from lua");
         }
@@ -33,11 +33,11 @@ namespace CoolMonkey
             lua_pushboolean(lua_state, static_cast<int>(value));
         }
 
-        static Boolean getValueFromLua(lua_State* lua_state)
+        static Boolean getValueFromLua(lua_State* lua_state, int value_index = 1)
         {
-            if (lua_isboolean(lua_state, -1))
+            if (lua_isboolean(lua_state, -value_index))
             {
-                return static_cast<Boolean>(lua_toboolean(lua_state, -1));
+                return static_cast<Boolean>(lua_toboolean(lua_state, -value_index));
             }
 
             // error
@@ -54,11 +54,11 @@ namespace CoolMonkey
             lua_pushnumber(lua_state, static_cast<lua_Number>(value));
         }
 
-        static Number getValueFromLua(lua_State* lua_state)
+        static Number getValueFromLua(lua_State* lua_state, int value_index = 1)
         {
-            if (lua_isnumber(lua_state, -1))
+            if (lua_isnumber(lua_state, -value_index))
             {
-                return static_cast<Number>(lua_tonumber(lua_state, -1));
+                return static_cast<Number>(lua_tonumber(lua_state, -value_index));
             }
 
             // error
@@ -75,11 +75,11 @@ namespace CoolMonkey
             lua_pushstring(lua_state, value.c_str());
         }
 
-        static StringType getValueFromLua(lua_State* lua_state)
+        static StringType getValueFromLua(lua_State* lua_state, int value_index = 1)
         {
-            if (lua_isstring(lua_state, -1))
+            if (lua_isstring(lua_state, -value_index))
             {
-                return StringType(lua_tostring(lua_state, -1));
+                return StringType(lua_tostring(lua_state, -value_index));
             }
 
             // error

@@ -16,30 +16,59 @@ using std::get;
 
 namespace CoolMonkey
 {
-    template<typename... Args>
-    void pushValuesToLua(lua_State* lua_state, Args&&... args)
+    template<typename T>
+    void pushValuesToLua(lua_State* lua_state, T&& value)
     {
-        CToLuaTypeDelegate<Args...>::pushValueToLua(lua_state, std::forward<Args>(args)...);
+        CToLuaTypeDelegate<T>::pushValueToLua(lua_state, std::forward<T>(value));
     }
 
-    template<typename... Args>
-    tuple<Args...> getValuesFromLua(lua_State* lua_state)
+    template<typename THead, typename... TTails>
+    void pushValuesToLua(lua_State* lua_state, THead&& value, TTails&&... args)
     {
-        auto ret_result = make_tuple(CToLuaTypeDelegate<Args>::getValueFromLua(lua_state)...);
-
-        return ret_result;
+        CToLuaTypeDelegate<THead>::pushValueToLua(lua_state, std::forward<THead>(value));
+        pushValuesToLua(lua_state, std::forward<TTails>(args)...);
     }
 
-    template<int...>
+    template<size_t N, typename THead, typename... TTails>
+    struct VariadicParameterExtractor
+    {
+        static_assert(N < 1 + sizeof...(TTails), "out of type index");
+        using type = typename VariadicParameterExtractor<N - 1, TTails...>::type;
+    };
+
+    template<typename THead, typename... TTails>
+    struct VariadicParameterExtractor<0, THead, TTails...>
+    {
+        using type = THead;
+    };
+
+    template<size_t N, typename... Args>
+    typename VariadicParameterExtractor<N, Args...>::type getValuesFromLua(lua_State* lua_state)
+    {
+        return CToLuaTypeDelegate<typename VariadicParameterExtractor<N, Args...>::type>::getValueFromLua(lua_state, static_cast<int>(sizeof...(Args) - N));
+    }
+
+    template<size_t...>
     struct IndexSequence {};
 
-    template<int Num, int... Seq>
+    template<size_t Num, size_t... Seq>
     struct SequenceGen
         : SequenceGen<Num - 1, Num - 1, Seq...>
     {};
 
-    template<int... Seq>
+    template<size_t... Seq>
     struct SequenceGen<0, Seq...>
+    {
+        typedef IndexSequence<Seq...> type;
+    };
+
+    template<size_t Num, size_t... Seq>
+    struct ReverseSequenceGen
+        : ReverseSequenceGen<Num - 1, Seq..., Num - 1>
+    {};
+
+    template<size_t... Seq>
+    struct ReverseSequenceGen<0, Seq...>
     {
         typedef IndexSequence<Seq...> type;
     };
@@ -58,18 +87,15 @@ namespace CoolMonkey
             if (in_param_num != sizeof...(Args))
             {
                 ostringstream err_stream;
-                err_stream << "lua call param count not match c funciton! " << "in: " << in_param_num << "desired: " << sizeof...(Args) << std::endl;
+                err_stream << "lua call param count not match c funciton! " << "in: " << in_param_num << " desired: " << sizeof...(Args) << std::endl;
                 lua_pushstring(lua_state, err_stream.str().c_str());
                 lua_error(lua_state);
 
                 return 0;
             }
 
-            DelegateFuncType func_instance = static_cast<DelegateFuncType>(lua_touserdata(lua_state, lua_upvalueindex(1)));
-
-            auto args = getValuesFromLua<Args...>(lua_state);
-
-            auto result = callFunction(func_instance, args, typename SequenceGen<sizeof...(Args)>::type());
+            auto result = callFunction(lua_state, typename SequenceGen<sizeof...(Args)>::type());
+            lua_pop(lua_state, static_cast<int>(sizeof...(Args)));
 
             pushValuesToLua(lua_state, result);
 
@@ -85,9 +111,10 @@ namespace CoolMonkey
 
     private:
         template<int... seq>
-        static Ret callFunction(DelegateFuncType func_instance, tuple<Args...> args, IndexSequence<seq...>)
+        static Ret callFunction(lua_State* lua_state, IndexSequence<seq...>)
         {
-            return func_instance(get<seq>(args)...);
+            DelegateFuncType func_instance = static_cast<DelegateFuncType>(lua_touserdata(lua_state, lua_upvalueindex(1)));
+            return func_instance(getValuesFromLua<seq, Args...>(lua_state)...);
         }
     };
 }
