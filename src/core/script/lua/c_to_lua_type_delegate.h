@@ -9,18 +9,24 @@ using std::string;
 
 namespace CoolMonkey
 {
+    template<typename T>
+    struct AnyTypeToFalse
+    {
+        enum {value = false};
+    };
+
     template<typename T, typename Enable = void>
     class CToLuaTypeDelegate
     {
     public:
         static void pushValueToLua(lua_State* lua_state, T&& value)
         {
-            static_assert(false, "not implement push value to lua");
+            static_assert(AnyTypeToFalse<T>::value, "not implement push value to lua");
         }
 
         static T getValueFromLua(lua_State* lua_state, int value_index = 1)
         {
-            static_assert(false, "not implement get value from lua");
+            static_assert(AnyTypeToFalse<T>::value, "not implement get value from lua");
         }
     };
 
