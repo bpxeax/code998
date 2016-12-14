@@ -98,16 +98,16 @@ namespace CoolMonkey
 
         static void addFunction(lua_State* lua_state, Ret(*func)(Args...), string func_name)
         {
-            lua_pushlightuserdata(lua_state, func);
+            lua_pushlightuserdata(lua_state, reinterpret_cast<void*>(func));
             lua_pushcclosure(lua_state, DelegateFunction, 1);
             lua_setglobal(lua_state, func_name.c_str());
         }
 
     private:
-        template<int... seq>
+        template<size_t... seq>
         static Ret callFunction(lua_State* lua_state, IndexSequence<seq...>)
         {
-            DelegateFuncType func_instance = static_cast<DelegateFuncType>(lua_touserdata(lua_state, lua_upvalueindex(1)));
+            DelegateFuncType func_instance = reinterpret_cast<DelegateFuncType>(lua_touserdata(lua_state, lua_upvalueindex(1)));
 
             return func_instance(CToLuaTypeDelegate<typename VariadicParameterExtractor<seq, Args...>::type>::getValueFromLua(lua_state, static_cast<int>(sizeof...(Args)-seq))...);
         }
