@@ -9,14 +9,14 @@ function genParserProject()
         targetdir (GLOBAL.BIN_OUT_DIR.."/%{prj.name}")
         libdirs 
         {
-            path.join("$(LLVM_ROOT)", "lib"),
-            path.join("$(BOOST_ROOT)", "stage/lib");
+            path.join(os.getenv("LLVM_ROOT"), "lib"),
+            path.join(os.getenv("BOOST_ROOT"), "stage/lib");
         }
         
         includedirs 
         {
-            path.join("$(LLVM_ROOT)", "include");
-            path.join("$(BOOST_ROOT)");
+            path.join(os.getenv("LLVM_ROOT"), "include");
+            path.join(os.getenv("BOOST_ROOT"));
         }
 
         files

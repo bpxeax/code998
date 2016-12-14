@@ -9,13 +9,13 @@ function genCoreProject()
         
         libdirs 
         {
-            path.join("$(LUAJIT_ROOT)", "src")
+            path.join(os.getenv("LUAJIT_ROOT"), "src")
         }
 
         includedirs 
         {
             path.join(GLOBAL.THIRD_SRC_DIR, "asio"),
-            path.join("$(LUAJIT_ROOT)", "src")
+            path.join(os.getenv("LUAJIT_ROOT"), "src")
         }
 
         files
@@ -48,12 +48,12 @@ end
 function useCoreLib()
     libdirs 
     {
-        path.join("$(LUAJIT_ROOT)", "src")
+        path.join(os.getenv("LUAJIT_ROOT"), "src")
     }
 
     includedirs 
     {
-        path.join("$(LUAJIT_ROOT)", "src")
+        path.join(os.getenv("LUAJIT_ROOT"), "src")
     }
 
     includedirs{path.join(GLOBAL.SRC_DIR, "core")}
