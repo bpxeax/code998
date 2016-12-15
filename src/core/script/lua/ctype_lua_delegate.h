@@ -1,8 +1,8 @@
-#ifndef __COOLMONKEY_C_TO_LUA_TYPE_DELEGATE_H__
-#define __COOLMONKEY_C_TO_LUA_TYPE_DELEGATE_H__
+#ifndef __COOLMONKEY_CTYPE_LUA_DELEGATE_H__
+#define __COOLMONKEY_CTYPE_LUA_DELEGATE_H__
 
 #include <type_traits>
-#include <string>
+#include "luatype_c_delegate.h"
 #include "lua.hpp"
 
 using std::string;
@@ -90,6 +90,29 @@ namespace CoolMonkey
 
             // error
             return StringType();
+        }
+    };
+
+    template<typename LuaTableType>
+    class CToLuaTypeDelegate<LuaTableType, typename std::enable_if<std::is_same<typename std::decay<LuaTableType>::type, LuaTable>::value>::type>
+    {
+    public:
+        static void pushValueToLua(lua_State* lua_state, LuaTableType&& value)
+        {
+            int table_ref = value.getTableRef();
+            lua_getref(lua_state, table_ref);
+        }
+
+        static LuaTableType getValueFromLua(lua_State* lua_state, int value_index = 1)
+        {
+            if (lua_istable(lua_state, -value_index))
+            {
+                lua_pushvalue(lua_state, -value_index);
+                int table_ref = lua_ref(lua_state, 1);
+                return LuaTableType(table_ref);
+            }
+
+            return LuaTableType(LUA_NOREF);
         }
     };
 }

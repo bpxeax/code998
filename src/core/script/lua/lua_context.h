@@ -6,8 +6,11 @@
 using std::string;
 
 struct lua_State;
+
 namespace CoolMonkey
 {
+    class LuaTable;
+
     class LuaContext
     {
     public:
@@ -24,8 +27,12 @@ namespace CoolMonkey
         LuaContext();
         ~LuaContext();
 
+        lua_State* getLuaStateInstance();
+        LuaTable& getGlobalTable();
+
     public:
         lua_State* m_lua_state{ nullptr };
+        LuaTable* m_global_table{ nullptr };
     };
 }
 

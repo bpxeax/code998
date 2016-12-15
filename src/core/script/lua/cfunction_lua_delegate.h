@@ -1,9 +1,9 @@
-#ifndef __COOLMONKEY_C_TO_LUA_DELEGATE_H__
-#define __COOLMONKEY_C_TO_LUA_DELEGATE_H__
+#ifndef __COOLMONKEY_CFUNCTION_LUA_DELEGATE_H__
+#define __COOLMONKEY_CFUNCTION_LUA_DELEGATE_H__
 
 #include <sstream>
 #include <functional>
-#include "c_to_lua_type_delegate.h"
+#include "ctype_lua_delegate.h"
 #include "lua.hpp"
 
 using std::ostringstream;
@@ -25,7 +25,7 @@ namespace CoolMonkey
     template<typename THead, typename... TTails>
     void pushValuesToLua(lua_State* lua_state, THead&& value, TTails&&... args)
     {
-        CToLuaTypeDelegate<THead>::pushValueToLua(lua_state, std::forward<THead>(value));
+        pushValuesToLua(lua_state, std::forward<THead>(value));
         pushValuesToLua(lua_state, std::forward<TTails>(args)...);
     }
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "asio.hpp"
 #include "script/lua/lua_context.h"
-#include "script/lua/c_to_lua_function_delegate.h"
+#include "script/lua/cfunction_lua_delegate.h"
 
 using UDP = asio::ip::udp;
 
