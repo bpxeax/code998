@@ -94,25 +94,17 @@ namespace CoolMonkey
     };
 
     template<typename LuaTableType>
-    class CToLuaTypeDelegate<LuaTableType, typename std::enable_if<std::is_same<typename std::decay<LuaTableType>::type, LuaTable>::value>::type>
+    class CToLuaTypeDelegate<LuaTableType, typename std::enable_if<std::is_same<typename std::decay<LuaTableType>::type, LuaTableInstance>::value>::type>
     {
     public:
         static void pushValueToLua(lua_State* lua_state, LuaTableType&& value)
         {
-            int table_ref = value.getTableRef();
-            lua_getref(lua_state, table_ref);
+            value.getValueToStack();
         }
 
         static LuaTableType getValueFromLua(lua_State* lua_state, int value_index = 1)
         {
-            if (lua_istable(lua_state, -value_index))
-            {
-                lua_pushvalue(lua_state, -value_index);
-                int table_ref = lua_ref(lua_state, 1);
-                return LuaTableType(table_ref);
-            }
-
-            return LuaTableType(LUA_NOREF);
+            return LuaTableType(lua_state, value_index);
         }
     };
 }

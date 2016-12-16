@@ -29,27 +29,15 @@ namespace CoolMonkey
     {
         m_lua_state = luaL_newstate();
         luaL_openlibs(m_lua_state);
-
-        lua_getglobal(m_lua_state, "_G");
-        int global_table_ref = lua_ref(m_lua_state, 1);
-        m_global_table = new LuaTable(global_table_ref);
     }
 
     LuaContext::~LuaContext()
     {
-        lua_unref(m_lua_state, m_global_table->getTableRef());
-        delete m_global_table;
-        m_global_table = nullptr;
         lua_close(m_lua_state);
     }
 
-    lua_State* LuaContext::getLuaStateInstance()
+    lua_State* LuaContext::getLuaStateInstance() const
     {
         return m_lua_state;
-    }
-
-    LuaTable& LuaContext::getGlobalTable()
-    {
-        return *m_global_table;
     }
 }

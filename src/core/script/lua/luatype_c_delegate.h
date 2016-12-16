@@ -5,19 +5,25 @@
 
 namespace CoolMonkey
 {
-    class LuaTable
+    class LuaContext;
+
+    class LuaTableInstance
     {
     public:
-        explicit LuaTable(const int table_ref = LUA_NOREF);
-        LuaTable(const LuaTable&) = delete;
-        LuaTable& operator=(const LuaTable&) = delete;
-        LuaTable(LuaTable&& rhs_table);
-        LuaTable& operator=(LuaTable&& rhs_table);
+        LuaTableInstance();
+        explicit LuaTableInstance(lua_State* lua_state, const int value_index = 1);
+        LuaTableInstance(const LuaTableInstance& rhs_table_instance);
+        LuaTableInstance& operator=(const LuaTableInstance& rhs_table_instance);
+        LuaTableInstance(LuaTableInstance&& rhs_table_instance) noexcept;
+        LuaTableInstance& operator=(LuaTableInstance&& rhs_table_instance) noexcept;
+        ~LuaTableInstance();
 
-        int getTableRef() const;
+        int getValueToStack() const;
 
     private:
+        lua_State* m_lua_state{ nullptr };
         int m_table_ref{ LUA_NOREF };
+        unsigned int* m_ref_count{ nullptr };
     };
 }
 

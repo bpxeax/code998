@@ -9,7 +9,7 @@ struct lua_State;
 
 namespace CoolMonkey
 {
-    class LuaTable;
+    class LuaTableInstance;
 
     class LuaContext
     {
@@ -27,12 +27,10 @@ namespace CoolMonkey
         LuaContext();
         ~LuaContext();
 
-        lua_State* getLuaStateInstance();
-        LuaTable& getGlobalTable();
+        lua_State* getLuaStateInstance() const;
 
-    public:
+    private:
         lua_State* m_lua_state{ nullptr };
-        LuaTable* m_global_table{ nullptr };
     };
 }
 

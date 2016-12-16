@@ -2,6 +2,8 @@
 #include "asio.hpp"
 #include "script/lua/lua_context.h"
 #include "script/lua/cfunction_lua_delegate.h"
+#include "script/lua/luafunction_c_delegate.h"
+#include "script/lua/luatype_c_delegate.h"
 
 using UDP = asio::ip::udp;
 
@@ -74,8 +76,28 @@ int testFunc(int a, float b, std::string c)
 int main(int argc, char* argv[])
 {
     CoolMonkey::LuaContext test_lua_context;
+    test_lua_context.executeFile("d:/test_lua.lua");
 
-    CoolMonkey::CToLuaFunctionDelegate<int, int, float, std::string>::addFunction(test_lua_context.m_lua_state, testFunc, "testCall");
+    lua_getglobal(test_lua_context.getLuaStateInstance(), "wokao");
+    CoolMonkey::LuaTableInstance table(test_lua_context.getLuaStateInstance(), 1);
+    lua_pop(test_lua_context.getLuaStateInstance(), 1);
+
+    CoolMonkey::LuaFunctionCDelegate test_lua_func(test_lua_context.getLuaStateInstance(), "add", table);
+    CoolMonkey::LuaFunctionCDelegate test_lua_func_2(test_lua_context.getLuaStateInstance(), "sub");
+    CoolMonkey::LuaFunctionCDelegate test_lua_func_3 = test_lua_func_2;
+
+    std::cout << "lua return value: " << test_lua_func.invoke<int, int, int>(2, 5) << std::endl;
+    std::cout << "lua return value2: " << test_lua_func_2.invoke<double, double, float>(2.4, 5.8) << std::endl;
+    std::cout << "lua return value3: " << test_lua_func_3.invoke<double, double, float>(3.14, 9,8) << std::endl;
+
+    test_lua_func_2 = test_lua_func;
+
+    std::cout << "lua return value4: " << test_lua_func_2.invoke<int, int, int>(1, 2) << std::endl;
+
+    CoolMonkey::CToLuaFunctionDelegate<int, int, float, std::string>::addFunction(test_lua_context.getLuaStateInstance(), testFunc, "testCall");
+
+    test_lua_func_2 = test_lua_func_3;
+    test_lua_func = test_lua_func_3;
 
     test_lua_context.executeFile("d:/test.lua");
 
