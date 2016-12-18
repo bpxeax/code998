@@ -13,6 +13,8 @@ using std::get;
 
 namespace CoolMonkey
 {
+    GENERATE_CLASS_HAS_MEMBER_TYPE(ClassType)
+
     template<typename TFunc>
     class CToLuaFunctionDelegate
     {
@@ -31,7 +33,19 @@ namespace CoolMonkey
                 return 0;
             }
 
-            auto result = callFunction(lua_state, typename TypeTraits::SequenceGen<TypeTraits::FunctionInfo<TFunc>::arg_count>::type());
+            return callFunction(lua_state, typename TypeTraits::SequenceGen<TypeTraits::FunctionInfo<TFunc>::arg_count>::type());
+        }
+
+    private:
+        template<size_t... seq, typename Func = TFunc>
+        static int callFunction(
+            lua_State* lua_state, 
+            TypeTraits::IndexSequence<seq...>, 
+            typename std::enable_if<!ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<Func>>::value && !std::is_same<typename TypeTraits::FunctionInfo<TFunc>::ResultType, void>::value>::type* = nullptr)
+        {
+            TFunc func_ptr = static_cast<TFunc>(TypeTraits::FunctionPointer<TFunc>(lua_touserdata(lua_state, lua_upvalueindex(1))));
+
+            auto result = func_ptr(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
             lua_pop(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count));
 
             pushValuesToLua(lua_state, result);
@@ -39,27 +53,74 @@ namespace CoolMonkey
             return 1;
         }
 
-        static void addFunction(lua_State* lua_state, TFunc func, const string& func_name)
+        template<size_t... seq, typename Func = TFunc>
+        static int callFunction(
+            lua_State* lua_state,
+            TypeTraits::IndexSequence<seq...>,
+            typename std::enable_if<!ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<Func>>::value && std::is_same<typename TypeTraits::FunctionInfo<TFunc>::ResultType, void>::value>::type* = nullptr)
         {
-            lua_pushlightuserdata(lua_state, reinterpret_cast<void*>(func));
-            lua_pushcclosure(lua_state, DelegateFunction, 1);
-            lua_setglobal(lua_state, func_name.c_str());
+            TFunc func_ptr = static_cast<TFunc>(TypeTraits::FunctionPointer<TFunc>(lua_touserdata(lua_state, lua_upvalueindex(1))));
+
+            func_ptr(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
+            lua_pop(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count));
+
+            return 0;
         }
 
-    private:
-        template<size_t... seq>
-        static typename TypeTraits::FunctionInfo<TFunc>::ResultType callFunction(lua_State* lua_state, TypeTraits::IndexSequence<seq...>)
+        template<size_t... seq, typename Func = TFunc>
+        static int callFunction(
+            lua_State* lua_state, 
+            TypeTraits::IndexSequence<seq...>, 
+            typename std::enable_if<ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<Func>>::value && !std::is_same<typename TypeTraits::FunctionInfo<TFunc>::ResultType, void>::value>::type* = nullptr)
         {
-            TFunc func_instance = reinterpret_cast<TFunc>(lua_touserdata(lua_state, lua_upvalueindex(1)));
+            typedef typename TypeTraits::FunctionInfo<TFunc>::ClassType ClassType;
 
-            return func_instance(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
+            TFunc func_ptr = static_cast<TFunc>(TypeTraits::FunctionPointer<TFunc>(lua_touserdata(lua_state, lua_upvalueindex(1))));
+            ClassType* class_instance = static_cast<ClassType*>(lua_touserdata(lua_state, lua_upvalueindex(2)));
+
+            auto result = (class_instance->*func_ptr)(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
+            lua_pop(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count));
+
+            pushValuesToLua(lua_state, result);
+
+            return 1;
+        }
+
+        template<size_t... seq, typename Func = TFunc>
+        static int callFunction(
+            lua_State* lua_state,
+            TypeTraits::IndexSequence<seq...>,
+            typename std::enable_if<ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<Func>>::value && std::is_same<typename TypeTraits::FunctionInfo<TFunc>::ResultType, void>::value>::type* = nullptr)
+        {
+            typedef typename TypeTraits::FunctionInfo<TFunc>::ClassType ClassType;
+
+            TFunc func_ptr = static_cast<TFunc>(TypeTraits::FunctionPointer<TFunc>(lua_touserdata(lua_state, lua_upvalueindex(1))));
+            ClassType* class_instance = static_cast<ClassType*>(lua_touserdata(lua_state, lua_upvalueindex(2)));
+
+            (class_instance->*func_ptr)(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
+            lua_pop(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count));
+
+            return 0;
         }
     };
 
     template<typename TFunc>
-    void pushCFunctionToLua(lua_State* lua_state, TFunc func, const string& func_name)
+    typename std::enable_if<!ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<TFunc>>::value>::type 
+    pushCFunctionToLua(lua_State* lua_state, TFunc func, const string& func_name)
     {
-        CToLuaFunctionDelegate<TFunc>::addFunction(lua_state, func, func_name);
+        lua_pushlightuserdata(lua_state, static_cast<void*>(TypeTraits::FunctionPointer<TFunc>(func)));
+        lua_pushcclosure(lua_state, CToLuaFunctionDelegate<TFunc>::DelegateFunction, 1);
+        lua_setglobal(lua_state, func_name.c_str());
+    }
+
+    template<typename TFunc>
+    typename std::enable_if<ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<TFunc>>::value>::type 
+    pushCFunctionToLua(lua_State* lua_state, TFunc func, const string& func_name, typename TypeTraits::FunctionInfo<TFunc>::ClassType* class_instance)
+    {
+        lua_pushlightuserdata(lua_state, static_cast<void*>(TypeTraits::FunctionPointer<TFunc>(func)));
+        lua_pushlightuserdata(lua_state, static_cast<void*>(class_instance));
+        lua_pushcclosure(lua_state, CToLuaFunctionDelegate<TFunc>::DelegateFunction, 2);
+        lua_setglobal(lua_state, func_name.c_str());
     }
 }
 

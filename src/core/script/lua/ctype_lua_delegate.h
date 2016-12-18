@@ -2,6 +2,7 @@
 #define __COOLMONKEY_CTYPE_LUA_DELEGATE_H__
 
 #include <type_traits>
+#include "type_traits/type_traits_extensions.h"
 #include "luatype_c_delegate.h"
 #include "lua.hpp"
 
@@ -9,24 +10,18 @@ using std::string;
 
 namespace CoolMonkey
 {
-    template<typename T>
-    struct AnyTypeToFalse
-    {
-        enum {value = false};
-    };
-
     template<typename T, typename Enable = void>
     class CToLuaTypeDelegate
     {
     public:
         static void pushValueToLua(lua_State* lua_state, T&& value)
         {
-            static_assert(AnyTypeToFalse<T>::value, "not implement push value to lua");
+            static_assert(TypeTraits::AnyTypeToFalse<T>::value, "not implement push value to lua");
         }
 
         static T getValueFromLua(lua_State* lua_state, int value_index = 1)
         {
-            static_assert(AnyTypeToFalse<T>::value, "not implement get value from lua");
+            static_assert(TypeTraits::AnyTypeToFalse<T>::value, "not implement get value from lua");
         }
     };
 

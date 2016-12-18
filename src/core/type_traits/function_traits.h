@@ -40,6 +40,42 @@ namespace CoolMonkey
                 using type = typename TypeTraits::VariadicParameterExtractor<type_index, Args...>::type;
             };
         };
+
+        template<typename TFunc>
+        class FunctionPointer
+        {
+            static_assert(std::is_function<typename std::remove_pointer<TFunc>::type>::value || std::is_member_function_pointer<TFunc>::value, "the type must be function pointer!");
+
+        public:
+            explicit FunctionPointer(TFunc func_ptr)
+                : m_func_ptr(func_ptr)
+            {
+
+            }
+
+            explicit FunctionPointer(void* raw_ptr)
+                : m_raw_ptr(raw_ptr)
+            {
+
+            }
+
+            explicit operator void*() const
+            {
+                return m_raw_ptr;
+            }
+
+            explicit operator TFunc() const
+            {
+                return m_func_ptr;
+            }
+
+        private:
+            union
+            {
+                TFunc m_func_ptr;
+                void* m_raw_ptr;
+            };
+        };
     }
 }
 

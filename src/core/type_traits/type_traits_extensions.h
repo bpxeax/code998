@@ -5,6 +5,12 @@ namespace CoolMonkey
 {
     namespace TypeTraits
     {
+        template<typename T>
+        struct AnyTypeToFalse
+        {
+            enum { value = false };
+        };
+
         template<size_t N, typename THead, typename... TTails>
         struct VariadicParameterExtractor
         {
@@ -41,6 +47,22 @@ namespace CoolMonkey
         struct ReverseSequenceGen<0, Seq...>
         {
             typedef IndexSequence<Seq...> type;
+        };
+
+#define GENERATE_CLASS_HAS_MEMBER_TYPE(type_name)                                   \
+        template<typename T>                                                        \
+        struct ClassHasMemberType##type_name                                        \
+        {                                                                           \
+            template<typename, typename> class Checker;                             \
+                                                                                    \
+            template<typename Class>                                                \
+            static std::true_type test(Checker<Class, typename Class::type_name>*); \
+                                                                                    \
+            template<typename Class>                                                \
+            static std::false_type test(...);                                       \
+                                                                                    \
+            using type = decltype(test<T>(nullptr));                                \
+            enum { value = type::value };                                           \
         };
     }
 }

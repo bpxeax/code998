@@ -73,6 +73,17 @@ int testFunc(int a, float b, std::string c)
     return a + b;
 }
 
+class TestClass
+{
+public:
+    int test(int a, int b)
+    {
+        std::cout << "this is call class member function!!!" << std::endl;
+
+        return a + b;
+    }
+};
+
 int main(int argc, char* argv[])
 {
     CoolMonkey::LuaContext test_lua_context;
@@ -94,12 +105,17 @@ int main(int argc, char* argv[])
 
     std::cout << "lua return value4: " << test_lua_func_2.invoke<int, int, int>(1, 2) << std::endl;
 
-    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), testFunc, "testCall");
+    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &testFunc, "testCall");
+    TestClass a;
+    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestClass::test, "testClassCall", &a);
 
     test_lua_func_2 = test_lua_func_3;
     test_lua_func = test_lua_func_3;
 
     test_lua_context.executeFile("d:/test.lua");
+
+    //std::cout << ClassHasMemberTypeClassType<CoolMonkey::TypeTraits::FunctionInfo<decltype(&TestClass::test)>>::value << std::endl;
+    //std::cout << ClassHasMemberTypeClassType<CoolMonkey::TypeTraits::FunctionInfo<decltype(&testFunc)>>::value << std::endl;
 
     try
     {
