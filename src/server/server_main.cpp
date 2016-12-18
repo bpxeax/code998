@@ -73,9 +73,28 @@ int testFunc(int a, float b, std::string c)
     return a + b;
 }
 
-class TestClass
+class TestVirtual
 {
 public:
+    virtual int test2(int a, int b) = 0;
+
+    int test(int a, int b, int c)
+    {
+        std::cout << "this is call base!" << std::endl;
+        return a + b + c;
+    }
+};
+
+class TestClass
+    : public TestVirtual
+{
+public:
+    int test2(int a, int b)
+    {
+        std::cout << "this is call drived!!!" << std::endl;
+        return a * b;
+    }
+
     int test(int a, int b)
     {
         std::cout << "this is call class member function!!!" << std::endl;
@@ -107,7 +126,11 @@ int main(int argc, char* argv[])
 
     CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &testFunc, "testCall");
     TestClass a;
-    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestClass::test, "testClassCall", &a);
+    TestVirtual* vitual_a = &a;
+    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test, "testClassCall", vitual_a);
+    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test2, "testClassCall2", vitual_a);
+    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test, "testClassCall3", &a);
+    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestClass::test, "testClassCall4", &a);
 
     test_lua_func_2 = test_lua_func_3;
     test_lua_func = test_lua_func_3;
