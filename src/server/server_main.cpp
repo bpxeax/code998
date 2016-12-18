@@ -94,7 +94,7 @@ int main(int argc, char* argv[])
 
     std::cout << "lua return value4: " << test_lua_func_2.invoke<int, int, int>(1, 2) << std::endl;
 
-    CoolMonkey::CToLuaFunctionDelegate<int, int, float, std::string>::addFunction(test_lua_context.getLuaStateInstance(), testFunc, "testCall");
+    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), testFunc, "testCall");
 
     test_lua_func_2 = test_lua_func_3;
     test_lua_func = test_lua_func_3;
