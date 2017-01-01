@@ -127,10 +127,10 @@ int main(int argc, char* argv[])
     CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &testFunc, "testCall");
     TestClass a;
     TestVirtual* vitual_a = &a;
-    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test, "testClassCall", vitual_a);
-    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test2, "testClassCall2", vitual_a);
-    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test, "testClassCall3", &a);
-    CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestClass::test, "testClassCall4", &a);
+    //CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test, "testClassCall");
+    //CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test2, "testClassCall2");
+    //CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestVirtual::test, "testClassCall3");
+    //CoolMonkey::pushCFunctionToLua(test_lua_context.getLuaStateInstance(), &TestClass::test, "testClassCall4");
 
     test_lua_func_2 = test_lua_func_3;
     test_lua_func = test_lua_func_3;

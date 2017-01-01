@@ -15,6 +15,24 @@ namespace CoolMonkey
 {
     GENERATE_CLASS_HAS_MEMBER_TYPE(ClassType)
 
+    template<typename TFunc, typename Enable = void>
+    class CFunctionDelegateParamCount;
+
+    template<typename TFunc>
+    class CFunctionDelegateParamCount<TFunc, typename std::enable_if<!ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<TFunc>>::value>::type>
+    {
+    public:
+        enum { param_count = TypeTraits::FunctionInfo<TFunc>::arg_count };
+    };
+
+    template<typename TFunc>
+    class CFunctionDelegateParamCount<TFunc, typename std::enable_if<ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<TFunc>>::value>::type>
+    {
+    public:
+        enum { param_count = TypeTraits::FunctionInfo<TFunc>::arg_count + 1 };
+    };
+
+
     template<typename TFunc>
     class CToLuaFunctionDelegate
     {
@@ -23,7 +41,7 @@ namespace CoolMonkey
         {
             int in_param_num = lua_gettop(lua_state);
 
-            if (in_param_num != TypeTraits::FunctionInfo<TFunc>::arg_count)
+            if (in_param_num != CFunctionDelegateParamCount<TFunc>::param_count)
             {
                 ostringstream err_stream;
                 err_stream << "lua call param count not match c funciton! " << "in: " << in_param_num << " desired: " << TypeTraits::FunctionInfo<TFunc>::arg_count << std::endl;
@@ -76,10 +94,10 @@ namespace CoolMonkey
             typedef typename TypeTraits::FunctionInfo<TFunc>::ClassType ClassType;
 
             TFunc func_ptr = static_cast<TFunc>(TypeTraits::FunctionPointer<TFunc>(lua_touserdata(lua_state, lua_upvalueindex(1))));
-            ClassType* class_instance = static_cast<ClassType*>(lua_touserdata(lua_state, lua_upvalueindex(2)));
+            ClassType class_instance = CToLuaTypeDelegate<ClassType>::getValueFromLua(lua_state, static_cast<int>(CFunctionDelegateParamCount<TFunc>::param_count));
 
-            auto result = (class_instance->*func_ptr)(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
-            lua_pop(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count));
+            auto result = (class_instance.*func_ptr)(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
+            lua_pop(lua_state, static_cast<int>(CFunctionDelegateParamCount<TFunc>::param_count));
 
             pushValuesToLua(lua_state, result);
 
@@ -95,31 +113,20 @@ namespace CoolMonkey
             typedef typename TypeTraits::FunctionInfo<TFunc>::ClassType ClassType;
 
             TFunc func_ptr = static_cast<TFunc>(TypeTraits::FunctionPointer<TFunc>(lua_touserdata(lua_state, lua_upvalueindex(1))));
-            ClassType* class_instance = static_cast<ClassType*>(lua_touserdata(lua_state, lua_upvalueindex(2)));
+            ClassType class_instance = CToLuaTypeDelegate<ClassType>::getValueFromLua(lua_state, static_cast<int>(CFunctionDelegateParamCount<TFunc>::param_count));
 
-            (class_instance->*func_ptr)(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
-            lua_pop(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count));
+            (class_instance.*func_ptr)(CToLuaTypeDelegate<typename TypeTraits::FunctionInfo<TFunc>::template ArgType<seq>::type>::getValueFromLua(lua_state, static_cast<int>(TypeTraits::FunctionInfo<TFunc>::arg_count - seq))...);
+            lua_pop(lua_state, static_cast<int>(CFunctionDelegateParamCount<TFunc>::param_count));
 
             return 0;
         }
     };
 
     template<typename TFunc>
-    typename std::enable_if<!ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<TFunc>>::value>::type 
-    pushCFunctionToLua(lua_State* lua_state, TFunc func, const string& func_name)
+    void pushCFunctionToLua(lua_State* lua_state, TFunc func, const string& func_name)
     {
         lua_pushlightuserdata(lua_state, static_cast<void*>(TypeTraits::FunctionPointer<TFunc>(func)));
         lua_pushcclosure(lua_state, CToLuaFunctionDelegate<TFunc>::DelegateFunction, 1);
-        lua_setglobal(lua_state, func_name.c_str());
-    }
-
-    template<typename TFunc>
-    typename std::enable_if<ClassHasMemberTypeClassType<TypeTraits::FunctionInfo<TFunc>>::value>::type 
-    pushCFunctionToLua(lua_State* lua_state, TFunc func, const string& func_name, typename TypeTraits::FunctionInfo<TFunc>::ClassType* class_instance)
-    {
-        lua_pushlightuserdata(lua_state, static_cast<void*>(TypeTraits::FunctionPointer<TFunc>(func)));
-        lua_pushlightuserdata(lua_state, static_cast<void*>(class_instance));
-        lua_pushcclosure(lua_state, CToLuaFunctionDelegate<TFunc>::DelegateFunction, 2);
         lua_setglobal(lua_state, func_name.c_str());
     }
 }
