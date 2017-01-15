@@ -9,13 +9,15 @@ function genCoreProject()
         
         libdirs 
         {
-            path.join(os.getenv("LUAJIT_ROOT"), "src")
+            path.join(os.getenv("LUAJIT_ROOT"), "lib"),
+            path.join(os.getenv("BOOST_ROOT"), "lib")
         }
 
         includedirs 
         {
             path.join(GLOBAL.THIRD_SRC_DIR, "asio"),
-            path.join(os.getenv("LUAJIT_ROOT"), "src")
+            path.join(os.getenv("LUAJIT_ROOT"), "include/luajit-2.0"),
+            path.join(os.getenv("BOOST_ROOT"), "include")
         }
 
         files
@@ -32,7 +34,7 @@ function genCoreProject()
 
         links
         {
-            "lua51"
+            "luajit-5.1"
         }
 
         filter "system:windows" 
@@ -48,18 +50,24 @@ end
 function useCoreLib()
     libdirs 
     {
-        path.join(os.getenv("LUAJIT_ROOT"), "src")
+        path.join(os.getenv("LUAJIT_ROOT"), "lib")
     }
 
     includedirs 
     {
-        path.join(os.getenv("LUAJIT_ROOT"), "src")
+        path.join(os.getenv("LUAJIT_ROOT"), "include/luajit-2.0")
     }
 
     includedirs{path.join(GLOBAL.SRC_DIR, "core")}
     links 
     {
         prj_name,
-        "lua51"
+        "luajit-5.1"
     }
+
+    filter "system:not windows"
+        links
+        {
+            "dl"
+        }
 end

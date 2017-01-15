@@ -39,7 +39,8 @@ function genClientProject()
         filter "system:not windows" 
             links 
             {
-                "core"
+                "core",
+                "pthread"
             }
 
     return prj_name

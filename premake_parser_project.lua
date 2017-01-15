@@ -10,13 +10,13 @@ function genParserProject()
         libdirs 
         {
             path.join(os.getenv("LLVM_ROOT"), "lib"),
-            path.join(os.getenv("BOOST_ROOT"), "stage/lib");
+            path.join(os.getenv("BOOST_ROOT"), "lib");
         }
         
         includedirs 
         {
             path.join(os.getenv("LLVM_ROOT"), "include");
-            path.join(os.getenv("BOOST_ROOT"));
+            path.join(os.getenv("BOOST_ROOT"), "include");
         }
 
         files
@@ -29,11 +29,14 @@ function genParserProject()
 
         links
         {
-            "libclang"
+            "clang",
+            "boost_filesystem",
+            "boost_system"
         }
 
         postbuildcommands
         {
+            "{MKDIR} "..GLOBAL.GENERATORS_DIR,
             "{COPY} %{cfg.linktarget.abspath} "..GLOBAL.GENERATORS_DIR
         }
 
