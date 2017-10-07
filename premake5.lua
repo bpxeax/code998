@@ -22,7 +22,7 @@ solution "Tools"
         architecture "x86_64"
 
     filter {"language:c++"}
-        flags "c++11"
+        cppdialect "c++11"
 
     filter {}
 
